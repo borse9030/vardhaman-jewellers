@@ -55,7 +55,7 @@ export default function HomePage() {
     {
       name: 'Bangles & Patlya',
       slug: '/bangles',
-      image: 'https://images.unsplash.com/photo-1611591475152-4783113837af?auto=format&fit=crop&w=600&q=80',
+      image: 'https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=600&q=80',
       tag: 'Khandesh Heritage',
     },
     {
@@ -104,9 +104,9 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col bg-[#FAF7F2]">
       <Header />
 
-      <main className="flex-1">
+      <main className="flex-1 pb-20 lg:pb-0">
         {/* 1. EDITORIAL HERO CAROUSEL */}
-        <section className="relative w-full h-[520px] sm:h-[620px] md:h-[700px] overflow-hidden bg-[#2B2625]">
+        <section className="relative w-full h-[460px] sm:h-[580px] md:h-[680px] overflow-hidden bg-[#2B2625]">
           {INITIAL_BANNERS.map((banner, idx) => (
             <div
               key={banner.id}
@@ -124,23 +124,23 @@ export default function HomePage() {
 
               <div className="absolute inset-0 bg-gradient-to-t from-[#1A1818]/90 via-[#1A1818]/30 to-black/20" />
 
-              <div className="absolute inset-0 max-w-7xl mx-auto px-6 sm:px-12 flex flex-col justify-center items-start text-white">
-                <span className="text-[10px] sm:text-xs font-semibold tracking-[0.25em] uppercase text-[#DFCDAE] mb-3 bg-[#581825]/70 backdrop-blur-xs px-3 py-1 rounded-full border border-[#C5A880]/30">
+              <div className="absolute inset-0 max-w-7xl mx-auto px-4 sm:px-12 flex flex-col justify-center items-start text-white">
+                <span className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] sm:tracking-[0.25em] uppercase text-[#DFCDAE] mb-2 sm:mb-3 bg-[#581825]/75 backdrop-blur-xs px-2.5 py-1 rounded-full border border-[#C5A880]/30">
                   {banner.tagline}
                 </span>
 
-                <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-bold leading-tight max-w-2xl text-balance drop-shadow-sm">
+                <h1 className="font-serif text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight max-w-2xl text-balance drop-shadow-sm">
                   {banner.title}
                 </h1>
 
-                <p className="mt-3 text-sm sm:text-base md:text-lg text-[#F4EDE4] max-w-xl font-light drop-shadow-xs">
+                <p className="mt-2 sm:mt-3 text-xs sm:text-base md:text-lg text-[#F4EDE4] max-w-xl font-light line-clamp-2 sm:line-clamp-none drop-shadow-xs">
                   {banner.subtitle}
                 </p>
 
-                <div className="mt-8 flex flex-wrap items-center gap-4">
+                <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                   <Link
                     href={banner.ctaLink}
-                    className="px-6 py-3.5 rounded-full bg-[#581825] hover:bg-[#380B12] text-white text-xs sm:text-sm font-semibold tracking-wide uppercase transition-all shadow-lg hover:shadow-2xl border border-[#C5A880]/40 flex items-center gap-2"
+                    className="px-5 sm:px-6 py-3 sm:py-3.5 rounded-full bg-[#581825] hover:bg-[#380B12] text-white text-xs sm:text-sm font-semibold tracking-wide uppercase transition-all shadow-lg hover:shadow-2xl border border-[#C5A880]/40 flex items-center justify-center gap-2"
                   >
                     <span>{banner.ctaText}</span>
                     <ArrowRight className="w-4 h-4" />
@@ -149,7 +149,7 @@ export default function HomePage() {
                   {banner.secondaryCtaText && (
                     <Link
                       href={banner.secondaryCtaLink || '/book-appointment'}
-                      className="px-6 py-3.5 rounded-full bg-white/20 hover:bg-white text-white hover:text-[#380B12] text-xs sm:text-sm font-semibold tracking-wide uppercase transition-all backdrop-blur-md border border-white/40"
+                      className="px-5 sm:px-6 py-3 sm:py-3.5 rounded-full bg-white/20 hover:bg-white text-white hover:text-[#380B12] text-xs sm:text-sm font-semibold tracking-wide uppercase transition-all backdrop-blur-md border border-white/40 text-center"
                     >
                       {banner.secondaryCtaText}
                     </Link>
@@ -162,27 +162,27 @@ export default function HomePage() {
           {/* Carousel Navigation Arrows */}
           <button
             onClick={() => setCurrentSlide((prev) => (prev - 1 + INITIAL_BANNERS.length) % INITIAL_BANNERS.length)}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-xs"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-xs"
             aria-label="Previous Slide"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
           <button
             onClick={() => setCurrentSlide((prev) => (prev + 1) % INITIAL_BANNERS.length)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-xs"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-xs"
             aria-label="Next Slide"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
 
           {/* Dots Indicator */}
-          <div className="absolute bottom-6 inset-x-0 z-20 flex justify-center gap-2">
+          <div className="absolute bottom-4 sm:bottom-6 inset-x-0 z-20 flex justify-center gap-1.5 sm:gap-2">
             {INITIAL_BANNERS.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrentSlide(i)}
                 className={`h-1.5 rounded-full transition-all ${
-                  currentSlide === i ? 'w-8 bg-[#C5A880]' : 'w-2 bg-white/50'
+                  currentSlide === i ? 'w-6 sm:w-8 bg-[#C5A880]' : 'w-2 bg-white/50'
                 }`}
                 aria-label={`Slide ${i + 1}`}
               />
@@ -191,39 +191,43 @@ export default function HomePage() {
         </section>
 
         {/* 2. LIVE GOLD RATE STRIP (ADMIN-SYNCED) */}
-        <section className="bg-white border-y border-[#E8E2D8] py-4 shadow-xs">
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-xs text-[#581825]">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></div>
-              <span className="font-bold uppercase tracking-wider">Live Bullion Benchmark:</span>
-              <span className="text-[#78716C]">Updated today at {rates.effectiveTime} (IBJA Market)</span>
+        <section className="bg-white border-y border-[#E8E2D8] py-3 sm:py-4 shadow-xs">
+          <div className="max-w-7xl mx-auto px-3 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-2.5 sm:gap-4">
+            <div className="flex items-center gap-2 text-[11px] sm:text-xs text-[#581825] w-full md:w-auto justify-between md:justify-start">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
+                <span className="font-bold uppercase tracking-wider">Live Bullion:</span>
+              </div>
+              <span className="text-[#78716C] text-[10px] sm:text-xs">Updated {rates.effectiveTime}</span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 sm:gap-8 text-xs font-medium">
-              <div className="flex items-center gap-1.5 bg-[#FAF7F2] px-3 py-1.5 rounded-lg border border-[#E8E2D8]">
-                <span className="text-[#78716C]">22K (916 Pure):</span>
-                <strong className="text-[#581825] font-bold text-sm">{formatINR(rates.rate22K)}</strong>
-                <span className="text-[10px] text-[#78716C]">/g</span>
-              </div>
+            <div className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-3 w-full sm:w-auto text-xs font-medium">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 bg-[#FAF7F2] p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-[#E8E2D8] text-center sm:text-left">
+                  <span className="text-[10px] sm:text-xs text-[#78716C]">22K:</span>
+                  <strong className="text-[#581825] font-bold text-xs sm:text-sm">{formatINR(rates.rate22K)}</strong>
+                  <span className="text-[9px] sm:text-[10px] text-[#78716C] hidden sm:inline">/g</span>
+                </div>
 
-              <div className="flex items-center gap-1.5 bg-[#FAF7F2] px-3 py-1.5 rounded-lg border border-[#E8E2D8]">
-                <span className="text-[#78716C]">24K (Bullion):</span>
-                <strong className="text-[#581825] font-bold text-sm">{formatINR(rates.rate24K)}</strong>
-                <span className="text-[10px] text-[#78716C]">/g</span>
-              </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 bg-[#FAF7F2] p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-[#E8E2D8] text-center sm:text-left">
+                  <span className="text-[10px] sm:text-xs text-[#78716C]">24K:</span>
+                  <strong className="text-[#581825] font-bold text-xs sm:text-sm">{formatINR(rates.rate24K)}</strong>
+                  <span className="text-[9px] sm:text-[10px] text-[#78716C] hidden sm:inline">/g</span>
+                </div>
 
-              <div className="flex items-center gap-1.5 bg-[#FAF7F2] px-3 py-1.5 rounded-lg border border-[#E8E2D8]">
-                <span className="text-[#78716C]">Silver:</span>
-                <strong className="text-[#581825] font-bold text-sm">{formatINR(rates.rateSilver)}</strong>
-                <span className="text-[10px] text-[#78716C]">/g</span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 bg-[#FAF7F2] p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-[#E8E2D8] text-center sm:text-left">
+                  <span className="text-[10px] sm:text-xs text-[#78716C]">Silver:</span>
+                  <strong className="text-[#581825] font-bold text-xs sm:text-sm">{formatINR(rates.rateSilver)}</strong>
+                  <span className="text-[9px] sm:text-[10px] text-[#78716C] hidden sm:inline">/g</span>
+                </div>
               </div>
 
               <Link
                 href="/gold-rate"
-                className="text-xs font-semibold text-[#9A7B4F] hover:text-[#581825] underline underline-offset-4 flex items-center gap-1"
+                className="text-[11px] sm:text-xs font-semibold text-[#9A7B4F] hover:text-[#581825] underline underline-offset-4 flex items-center gap-1 self-end sm:self-center"
               >
-                <span>Rate History & Trends</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>Rate History</span>
+                <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
           </div>
@@ -239,9 +243,7 @@ export default function HomePage() {
               Shop by Category
             </h2>
             <div className="w-16 h-0.5 bg-[#C5A880] mx-auto mt-3"></div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          </div>          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-6">
             {categories.map((cat, idx) => (
               <Link
                 key={idx}
@@ -255,16 +257,16 @@ export default function HomePage() {
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-108"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent"></div>
 
-                <div className="absolute bottom-4 inset-x-4 text-white">
-                  <span className="text-[10px] uppercase tracking-wider text-[#DFCDAE] font-semibold">
+                <div className="absolute bottom-2.5 sm:bottom-4 inset-x-2.5 sm:inset-x-4 text-white">
+                  <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-[#DFCDAE] font-semibold">
                     {cat.tag}
                   </span>
-                  <h3 className="font-serif text-sm sm:text-base font-bold mt-0.5 group-hover:text-[#DFCDAE] transition-colors">
+                  <h3 className="font-serif text-xs sm:text-base font-bold mt-0.5 group-hover:text-[#DFCDAE] transition-colors leading-tight">
                     {cat.name}
                   </h3>
-                  <div className="flex items-center gap-1 text-[11px] text-white/80 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-white/80 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <span>Explore designs</span>
                     <ArrowRight className="w-3 h-3" />
                   </div>
@@ -275,36 +277,36 @@ export default function HomePage() {
         </section>
 
         {/* 4. FEATURED BRIDAL COLLECTION BANNER */}
-        <section className="bg-[#FAF7F2] py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        <section className="bg-[#FAF7F2] py-8 sm:py-12">
+          <div className="max-w-7xl mx-auto px-3 sm:px-8">
             <div className="relative rounded-2xl overflow-hidden bg-[#380B12] text-white border border-[#C5A880]/30 shadow-xl grid grid-cols-1 lg:grid-cols-12 items-center">
-              <div className="lg:col-span-7 p-8 sm:p-12 space-y-4">
-                <span className="text-[11px] uppercase tracking-[0.25em] text-[#C5A880] font-bold">
+              <div className="lg:col-span-7 p-5 sm:p-10 lg:p-12 space-y-3 sm:space-y-4">
+                <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#C5A880] font-bold">
                   The Royal Khandesh Wedding Trousseau
                 </span>
-                <h2 className="font-serif text-2xl sm:text-4xl font-bold leading-tight">
+                <h2 className="font-serif text-xl sm:text-3xl lg:text-4xl font-bold leading-tight">
                   Sacred Heirlooms for Every Maharashtrian Bride
                 </h2>
                 <p className="text-xs sm:text-sm text-[#F4EDE4] leading-relaxed max-w-lg">
                   From traditional twin-cup Wati Mangalsutras and hand-embossed Patlya bangles to majestic Kolhapuri Saaj and Nakshi temple chokers, each creation honors your most cherished sacred promises.
                 </p>
-                <div className="pt-4 flex flex-wrap gap-4">
+                <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row gap-2.5 sm:gap-4">
                   <Link
                     href="/wedding"
-                    className="px-6 py-3 rounded-full bg-[#C5A880] text-[#380B12] text-xs font-bold uppercase tracking-wider hover:bg-white transition-colors"
+                    className="px-5 sm:px-6 py-3 rounded-full bg-[#C5A880] text-[#380B12] text-xs font-bold uppercase tracking-wider hover:bg-white transition-colors text-center"
                   >
                     View Bridal Collection
                   </Link>
                   <Link
                     href="/book-appointment"
-                    className="px-6 py-3 rounded-full border border-white/40 text-white text-xs font-bold uppercase tracking-wider hover:bg-white/10 transition-colors"
+                    className="px-5 sm:px-6 py-3 rounded-full border border-white/40 text-white text-xs font-bold uppercase tracking-wider hover:bg-white/10 transition-colors text-center"
                   >
                     Book Bridal Lounge
                   </Link>
                 </div>
               </div>
 
-              <div className="lg:col-span-5 relative h-64 lg:h-96 w-full">
+              <div className="lg:col-span-5 relative h-52 sm:h-72 lg:h-96 w-full">
                 <Image
                   src="https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?auto=format&fit=crop&w=1000&q=80"
                   alt="Bridal Jewellery"
@@ -317,26 +319,26 @@ export default function HomePage() {
         </section>
 
         {/* 5. BEST SELLERS PRODUCT GRID */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-8 py-16">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
+        <section className="max-w-7xl mx-auto px-3 sm:px-8 py-10 sm:py-16">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-8 sm:mb-10 gap-3 sm:gap-4">
             <div>
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#9A7B4F]">
                 Time-Tested Favorites
               </span>
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#1A1818] mt-1">
+              <h2 className="font-serif text-xl sm:text-3xl font-bold text-[#1A1818] mt-1">
                 Most Cherished Jewellery
               </h2>
             </div>
             <Link
               href="/shop"
-              className="text-xs font-bold text-[#581825] hover:text-[#9A7B4F] flex items-center gap-1 transition-colors uppercase tracking-wider"
+              className="text-xs font-bold text-[#581825] hover:text-[#9A7B4F] flex items-center gap-1 transition-colors uppercase tracking-wider self-end sm:self-auto"
             >
               <span>View All Catalogue</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-6">
             {bestSellers.slice(0, 4).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -344,16 +346,16 @@ export default function HomePage() {
         </section>
 
         {/* 6. SELL YOUR GOLD / GOLD EXCHANGE HIGHLIGHT */}
-        <section className="bg-white border-y border-[#E8E2D8] py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div className="space-y-5">
+        <section className="bg-white border-y border-[#E8E2D8] py-10 sm:py-16">
+          <div className="max-w-7xl mx-auto px-3 sm:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              <div className="space-y-4 sm:space-y-5">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF7F2] border border-[#C5A880]/40 text-xs text-[#581825] font-semibold">
                   <Scale className="w-3.5 h-3.5 text-[#C5A880]" />
                   <span>100% Transparent Scrap Assessment</span>
                 </div>
 
-                <h2 className="font-serif text-2xl sm:text-4xl font-bold text-[#1A1818]">
+                <h2 className="font-serif text-xl sm:text-3xl lg:text-4xl font-bold text-[#1A1818] leading-tight">
                   Exchange Your Old Gold for Modern Hallmarked Masterpieces
                 </h2>
 
@@ -361,32 +363,32 @@ export default function HomePage() {
                   Turn your idle ancestral ornaments into brand new certified 22K jewellery or diamond solitaires. We provide instant computerized Karatmeter testing right in front of you, with zero hidden melt loss deductions.
                 </p>
 
-                <div className="space-y-3 pt-2 text-xs text-[#2B2625]">
-                  <div className="flex items-center gap-2.5">
+                <div className="space-y-2.5 pt-1 text-xs text-[#2B2625]">
+                  <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span>Live valuation calculated on today’s IBJA spot bullion rate</span>
                   </div>
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span>Exact karatage verification via German Karatmeter spectrometer</span>
                   </div>
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span>Same-day store exchange or bank credit voucher</span>
                   </div>
                 </div>
 
-                <div className="pt-4 flex items-center gap-4">
+                <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                   <Link
                     href="/sell-gold"
-                    className="px-6 py-3 rounded-full bg-[#581825] hover:bg-[#380B12] text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-md flex items-center gap-2"
+                    className="px-6 py-3 rounded-full bg-[#581825] hover:bg-[#380B12] text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-2"
                   >
                     <span>Calculate Exchange Value</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                   <Link
                     href="/gold-buying-guide"
-                    className="text-xs font-semibold text-[#581825] hover:underline"
+                    className="text-xs font-semibold text-[#581825] hover:underline text-center sm:text-left"
                   >
                     Read Gold Buying Guide
                   </Link>
@@ -394,20 +396,20 @@ export default function HomePage() {
               </div>
 
               {/* Calculator Teaser Card */}
-              <div className="p-6 sm:p-8 rounded-2xl bg-[#FAF7F2] border border-[#E8E2D8] luxury-card-shadow">
-                <h3 className="font-serif text-lg font-bold text-[#1A1818] mb-1">
+              <div className="p-4 sm:p-8 rounded-2xl bg-[#FAF7F2] border border-[#E8E2D8] luxury-card-shadow">
+                <h3 className="font-serif text-base sm:text-lg font-bold text-[#1A1818] mb-1">
                   Indicative Old Gold Calculator
                 </h3>
-                <p className="text-xs text-[#78716C] mb-6">
+                <p className="text-xs text-[#78716C] mb-4 sm:mb-6">
                   Estimate your old ornament value instantly based on current rates
                 </p>
 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
                     <label className="block text-xs font-semibold text-[#2B2625] mb-1">
                       Approximate Weight in Grams
                     </label>
-                    <div className="p-3 bg-white border border-[#E8E2D8] rounded-xl text-sm font-bold text-[#581825]">
+                    <div className="p-2.5 sm:p-3 bg-white border border-[#E8E2D8] rounded-xl text-xs sm:text-sm font-bold text-[#581825]">
                       Example: 25.00 Grams
                     </div>
                   </div>
@@ -416,15 +418,15 @@ export default function HomePage() {
                     <label className="block text-xs font-semibold text-[#2B2625] mb-1">
                       Assumed Purity
                     </label>
-                    <div className="p-3 bg-white border border-[#E8E2D8] rounded-xl text-sm font-bold text-[#581825]">
+                    <div className="p-2.5 sm:p-3 bg-white border border-[#E8E2D8] rounded-xl text-xs sm:text-sm font-bold text-[#581825]">
                       22 Karat (91.6% Pure Gold)
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-[#E8E2D8] flex items-baseline justify-between">
+                  <div className="pt-3 sm:pt-4 border-t border-[#E8E2D8] flex items-baseline justify-between">
                     <div>
-                      <p className="text-xs text-[#78716C]">Estimated Valuation</p>
-                      <span className="text-2xl font-bold text-[#581825]">
+                      <p className="text-[11px] sm:text-xs text-[#78716C]">Estimated Valuation</p>
+                      <span className="text-xl sm:text-2xl font-bold text-[#581825]">
                         {formatINR(Math.round(25 * rates.rate22K * 0.98))}
                       </span>
                     </div>
@@ -442,18 +444,18 @@ export default function HomePage() {
         </section>
 
         {/* 7. NEW ARRIVALS */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-8 py-16">
-          <div className="text-center max-w-xl mx-auto mb-12">
+        <section className="max-w-7xl mx-auto px-3 sm:px-8 py-10 sm:py-16">
+          <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#9A7B4F]">
               Fresh from the Ateliers
             </span>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#1A1818] mt-1">
+            <h2 className="font-serif text-xl sm:text-3xl font-bold text-[#1A1818] mt-1">
               New Arrivals
             </h2>
-            <div className="w-16 h-0.5 bg-[#C5A880] mx-auto mt-3"></div>
+            <div className="w-16 h-0.5 bg-[#C5A880] mx-auto mt-2 sm:mt-3"></div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-6">
             {newArrivals.slice(0, 4).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -461,45 +463,45 @@ export default function HomePage() {
         </section>
 
         {/* 8. WHY VARDHAMAN JEWELLERS */}
-        <section className="bg-[#FAF7F2] py-16 border-t border-[#E8E2D8]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-8">
-            <div className="text-center max-w-xl mx-auto mb-12">
+        <section className="bg-[#FAF7F2] py-10 sm:py-16 border-t border-[#E8E2D8]">
+          <div className="max-w-7xl mx-auto px-3 sm:px-8">
+            <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#9A7B4F]">
                 The Vardhaman Promise
               </span>
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#1A1818] mt-1">
+              <h2 className="font-serif text-xl sm:text-3xl font-bold text-[#1A1818] mt-1">
                 Why Families Trust Vardhaman Jewellers
               </h2>
-              <div className="w-16 h-0.5 bg-[#C5A880] mx-auto mt-3"></div>
+              <div className="w-16 h-0.5 bg-[#C5A880] mx-auto mt-2 sm:mt-3"></div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="p-6 rounded-2xl bg-white border border-[#E8E2D8] luxury-card-shadow flex flex-col items-center text-center">
-                <div className="w-14 h-14 rounded-full bg-[#FAF7F2] border border-[#C5A880] flex items-center justify-center mb-4">
-                  <ShieldCheck className="w-7 h-7 text-[#581825]" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
+              <div className="p-4 sm:p-6 rounded-2xl bg-white border border-[#E8E2D8] luxury-card-shadow flex flex-col items-center text-center">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#FAF7F2] border border-[#C5A880] flex items-center justify-center mb-3 sm:mb-4">
+                  <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-[#581825]" />
                 </div>
-                <h3 className="font-serif text-base font-bold text-[#1A1818]">100% BIS Hallmarked</h3>
-                <p className="text-xs text-[#78716C] mt-2 leading-relaxed">
+                <h3 className="font-serif text-sm sm:text-base font-bold text-[#1A1818]">100% BIS Hallmarked</h3>
+                <p className="text-xs text-[#78716C] mt-1.5 sm:mt-2 leading-relaxed">
                   Every gram of gold is certified with the Government of India BIS Hallmark stamp, guaranteeing 91.6% purity with zero compromises.
                 </p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-white border border-[#E8E2D8] luxury-card-shadow flex flex-col items-center text-center">
-                <div className="w-14 h-14 rounded-full bg-[#FAF7F2] border border-[#C5A880] flex items-center justify-center mb-4">
-                  <Scale className="w-7 h-7 text-[#581825]" />
+              <div className="p-4 sm:p-6 rounded-2xl bg-white border border-[#E8E2D8] luxury-card-shadow flex flex-col items-center text-center">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#FAF7F2] border border-[#C5A880] flex items-center justify-center mb-3 sm:mb-4">
+                  <Scale className="w-6 h-6 sm:w-7 sm:h-7 text-[#581825]" />
                 </div>
-                <h3 className="font-serif text-base font-bold text-[#1A1818]">Transparent Pricing</h3>
-                <p className="text-xs text-[#78716C] mt-2 leading-relaxed">
+                <h3 className="font-serif text-sm sm:text-base font-bold text-[#1A1818]">Transparent Pricing</h3>
+                <p className="text-xs text-[#78716C] mt-1.5 sm:mt-2 leading-relaxed">
                   Clear itemized invoices displaying exact net gold weight, daily spot rate, making charges, and 3% GST. Complete peace of mind.
                 </p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-white border border-[#E8E2D8] luxury-card-shadow flex flex-col items-center text-center">
-                <div className="w-14 h-14 rounded-full bg-[#FAF7F2] border border-[#C5A880] flex items-center justify-center mb-4">
-                  <RefreshCw className="w-7 h-7 text-[#581825]" />
+              <div className="p-4 sm:p-6 rounded-2xl bg-white border border-[#E8E2D8] luxury-card-shadow flex flex-col items-center text-center">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#FAF7F2] border border-[#C5A880] flex items-center justify-center mb-3 sm:mb-4">
+                  <RefreshCw className="w-6 h-6 sm:w-7 sm:h-7 text-[#581825]" />
                 </div>
-                <h3 className="font-serif text-base font-bold text-[#1A1818]">Lifetime Buyback & Exchange</h3>
-                <p className="text-xs text-[#78716C] mt-2 leading-relaxed">
+                <h3 className="font-serif text-sm sm:text-base font-bold text-[#1A1818]">Lifetime Buyback & Exchange</h3>
+                <p className="text-xs text-[#78716C] mt-1.5 sm:mt-2 leading-relaxed">
                   Assured lifetime exchange policy across our Jalgaon, Dhule, Pune, and Mumbai stores. Your jewellery is a lifelong asset.
                 </p>
               </div>
@@ -508,27 +510,27 @@ export default function HomePage() {
         </section>
 
         {/* 9. TESTIMONIALS */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-8 py-16">
-          <div className="text-center max-w-xl mx-auto mb-12">
+        <section className="max-w-7xl mx-auto px-3 sm:px-8 py-10 sm:py-16">
+          <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#9A7B4F]">
               Voices of Khandesh & Maharashtra
             </span>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#1A1818] mt-1">
+            <h2 className="font-serif text-xl sm:text-3xl font-bold text-[#1A1818] mt-1">
               Customer Testimonials
             </h2>
-            <div className="w-16 h-0.5 bg-[#C5A880] mx-auto mt-3"></div>
+            <div className="w-16 h-0.5 bg-[#C5A880] mx-auto mt-2 sm:mt-3"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {INITIAL_REVIEWS.map((rev) => (
               <div
                 key={rev.id}
-                className="p-6 rounded-2xl bg-white border border-[#E8E2D8] luxury-card-shadow flex flex-col justify-between"
+                className="p-4 sm:p-6 rounded-2xl bg-white border border-[#E8E2D8] luxury-card-shadow flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex gap-1 text-amber-500 mb-3">
+                  <div className="flex gap-1 text-amber-500 mb-2.5 sm:mb-3">
                     {[...Array(rev.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                      <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
                   <p className="text-xs text-[#44403C] leading-relaxed italic">
@@ -536,7 +538,7 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-[#F0ECE4] flex items-center justify-between text-xs">
+                <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-[#F0ECE4] flex items-center justify-between text-xs">
                   <div>
                     <h4 className="font-bold text-[#1A1818]">{rev.customerName}</h4>
                     <span className="text-[11px] text-[#78716C]">{rev.city}, Maharashtra</span>
@@ -551,12 +553,12 @@ export default function HomePage() {
         </section>
 
         {/* 10. BOOK IN-STORE APPOINTMENT CTA */}
-        <section className="bg-[#380B12] text-white py-16">
-          <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center space-y-6">
+        <section className="bg-[#380B12] text-white py-12 sm:py-16">
+          <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center space-y-4 sm:space-y-6">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#C5A880]">
               Personalized Luxury Experience
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold">
+            <h2 className="font-serif text-2xl sm:text-4xl font-bold leading-tight">
               Experience the Vardhaman Heritage in Person
             </h2>
             <p className="text-xs sm:text-sm text-[#F4EDE4] max-w-xl mx-auto leading-relaxed">
@@ -565,7 +567,7 @@ export default function HomePage() {
             <div className="pt-2">
               <Link
                 href="/book-appointment"
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-[#C5A880] text-[#380B12] font-bold text-xs uppercase tracking-wider hover:bg-white transition-colors shadow-lg"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#C5A880] text-[#380B12] font-bold text-xs uppercase tracking-wider hover:bg-white transition-colors shadow-lg"
               >
                 <Calendar className="w-4 h-4" />
                 <span>Book Store Appointment</span>

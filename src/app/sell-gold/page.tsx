@@ -72,13 +72,13 @@ export default function SellGoldPage() {
     <div className="min-h-screen flex flex-col bg-[#FAF7F2]">
       <Header />
 
-      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-8 py-10 sm:py-16">
+      <main className="flex-1 max-w-5xl mx-auto px-3 sm:px-8 py-8 sm:py-16 pb-24 lg:pb-16">
         {/* Page Banner */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#9A7B4F]">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em] text-[#9A7B4F]">
             100% Transparent Scrap Assessment
           </span>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#1A1818] mt-2">
+          <h1 className="font-serif text-2xl sm:text-4xl font-bold text-[#1A1818] mt-1.5 sm:mt-2">
             Sell or Exchange Your Old Gold
           </h1>
           <p className="text-xs sm:text-sm text-[#78716C] mt-2 leading-relaxed">

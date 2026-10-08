@@ -31,84 +31,100 @@ export default function GoldRatePage() {
     <div className="min-h-screen flex flex-col bg-[#FAF7F2]">
       <Header />
 
-      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-8 py-10 sm:py-16">
+      <main className="flex-1 max-w-6xl mx-auto px-3 sm:px-8 py-8 sm:py-16 pb-24 lg:pb-16">
         {/* Page Title */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#9A7B4F]">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em] text-[#9A7B4F]">
             Official Bullion Benchmark
           </span>
-          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#1A1818] mt-2">
+          <h1 className="font-serif text-2xl sm:text-4xl font-bold text-[#1A1818] mt-1.5 sm:mt-2">
             Today’s Live Gold & Silver Rates
           </h1>
-          <p className="text-xs sm:text-sm text-[#78716C] mt-2 leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#78716C] mt-1.5 sm:mt-2 leading-relaxed">
             Updated live from the India Bullion & Jewellers Association (IBJA) spot market. Accurate pricing applied transparently to all Vardhaman Jewellers creations.
           </p>
         </div>
 
         {/* Live Rates Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5 mb-8 sm:mb-12">
           {/* 22K Gold */}
-          <div className="bg-white p-6 rounded-2xl border-2 border-[#581825] shadow-md relative overflow-hidden">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#581825] bg-[#FAF7F2] px-2 py-0.5 rounded border border-[#E8E2D8]">
-              Most Popular For Jewellery
-            </span>
-            <h2 className="font-serif text-lg font-bold text-[#1A1818] mt-3">22 Karat Gold (916)</h2>
-            <p className="text-xs text-[#78716C]">Government BIS Hallmarked</p>
-            <div className="mt-4 pt-3 border-t border-[#F0ECE4]">
-              <span className="text-3xl font-bold text-[#581825]">{formatINR(rates.rate22K)}</span>
-              <span className="text-xs text-[#78716C] ml-1">/gram</span>
+          <div className="bg-white p-3.5 sm:p-6 rounded-2xl border-2 border-[#581825] shadow-md relative overflow-hidden flex flex-col justify-between">
+            <div>
+              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-[#581825] bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E8E2D8] line-clamp-1">
+                Jewellery Benchmark
+              </span>
+              <h2 className="font-serif text-sm sm:text-lg font-bold text-[#1A1818] mt-2 sm:mt-3">22 Karat (916)</h2>
+              <p className="text-[11px] sm:text-xs text-[#78716C]">BIS Hallmarked</p>
             </div>
-            <p className="text-[11px] text-[#A8A29E] mt-2">
-              10 Grams: <strong>{formatINR(rates.rate22K * 10)}</strong>
-            </p>
+            <div>
+              <div className="mt-3 pt-2 sm:mt-4 sm:pt-3 border-t border-[#F0ECE4]">
+                <span className="text-xl sm:text-3xl font-bold text-[#581825]">{formatINR(rates.rate22K)}</span>
+                <span className="text-[10px] sm:text-xs text-[#78716C] ml-1">/g</span>
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-1 sm:mt-2">
+                10g: <strong>{formatINR(rates.rate22K * 10)}</strong>
+              </p>
+            </div>
           </div>
 
           {/* 24K Gold */}
-          <div className="bg-white p-6 rounded-2xl border border-[#E8E2D8] shadow-xs">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#9A7B4F] bg-[#FAF7F2] px-2 py-0.5 rounded border border-[#E8E2D8]">
-              99.9% Pure Bullion
-            </span>
-            <h2 className="font-serif text-lg font-bold text-[#1A1818] mt-3">24 Karat Gold (999)</h2>
-            <p className="text-xs text-[#78716C]">Investment Coins & Bars</p>
-            <div className="mt-4 pt-3 border-t border-[#F0ECE4]">
-              <span className="text-3xl font-bold text-[#1A1818]">{formatINR(rates.rate24K)}</span>
-              <span className="text-xs text-[#78716C] ml-1">/gram</span>
+          <div className="bg-white p-3.5 sm:p-6 rounded-2xl border border-[#E8E2D8] shadow-xs flex flex-col justify-between">
+            <div>
+              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-[#9A7B4F] bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E8E2D8] line-clamp-1">
+                99.9% Pure Bullion
+              </span>
+              <h2 className="font-serif text-sm sm:text-lg font-bold text-[#1A1818] mt-2 sm:mt-3">24 Karat (999)</h2>
+              <p className="text-[11px] sm:text-xs text-[#78716C]">Investment Bars</p>
             </div>
-            <p className="text-[11px] text-[#A8A29E] mt-2">
-              10 Grams: <strong>{formatINR(rates.rate24K * 10)}</strong>
-            </p>
+            <div>
+              <div className="mt-3 pt-2 sm:mt-4 sm:pt-3 border-t border-[#F0ECE4]">
+                <span className="text-xl sm:text-3xl font-bold text-[#1A1818]">{formatINR(rates.rate24K)}</span>
+                <span className="text-[10px] sm:text-xs text-[#78716C] ml-1">/g</span>
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-1 sm:mt-2">
+                10g: <strong>{formatINR(rates.rate24K * 10)}</strong>
+              </p>
+            </div>
           </div>
 
           {/* 18K Gold */}
-          <div className="bg-white p-6 rounded-2xl border border-[#E8E2D8] shadow-xs">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#78716C] bg-[#FAF7F2] px-2 py-0.5 rounded border border-[#E8E2D8]">
-              Diamond Setting Grade
-            </span>
-            <h2 className="font-serif text-lg font-bold text-[#1A1818] mt-3">18 Karat Gold (750)</h2>
-            <p className="text-xs text-[#78716C]">Solitaires & High Jewellery</p>
-            <div className="mt-4 pt-3 border-t border-[#F0ECE4]">
-              <span className="text-3xl font-bold text-[#1A1818]">{formatINR(rates.rate18K)}</span>
-              <span className="text-xs text-[#78716C] ml-1">/gram</span>
+          <div className="bg-white p-3.5 sm:p-6 rounded-2xl border border-[#E8E2D8] shadow-xs flex flex-col justify-between">
+            <div>
+              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-[#78716C] bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E8E2D8] line-clamp-1">
+                Diamond Grade
+              </span>
+              <h2 className="font-serif text-sm sm:text-lg font-bold text-[#1A1818] mt-2 sm:mt-3">18 Karat (750)</h2>
+              <p className="text-[11px] sm:text-xs text-[#78716C]">Solitaires</p>
             </div>
-            <p className="text-[11px] text-[#A8A29E] mt-2">
-              10 Grams: <strong>{formatINR(rates.rate18K * 10)}</strong>
-            </p>
+            <div>
+              <div className="mt-3 pt-2 sm:mt-4 sm:pt-3 border-t border-[#F0ECE4]">
+                <span className="text-xl sm:text-3xl font-bold text-[#1A1818]">{formatINR(rates.rate18K)}</span>
+                <span className="text-[10px] sm:text-xs text-[#78716C] ml-1">/g</span>
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-1 sm:mt-2">
+                10g: <strong>{formatINR(rates.rate18K * 10)}</strong>
+              </p>
+            </div>
           </div>
 
           {/* Silver */}
-          <div className="bg-white p-6 rounded-2xl border border-[#E8E2D8] shadow-xs">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#78716C] bg-[#FAF7F2] px-2 py-0.5 rounded border border-[#E8E2D8]">
-              92.5 Sterling Silver
-            </span>
-            <h2 className="font-serif text-lg font-bold text-[#1A1818] mt-3">Pure Silver</h2>
-            <p className="text-xs text-[#78716C]">Pooja Thalis & Payals</p>
-            <div className="mt-4 pt-3 border-t border-[#F0ECE4]">
-              <span className="text-3xl font-bold text-[#1A1818]">{formatINR(rates.rateSilver)}</span>
-              <span className="text-xs text-[#78716C] ml-1">/gram</span>
+          <div className="bg-white p-3.5 sm:p-6 rounded-2xl border border-[#E8E2D8] shadow-xs flex flex-col justify-between">
+            <div>
+              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-[#78716C] bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E8E2D8] line-clamp-1">
+                92.5 Sterling
+              </span>
+              <h2 className="font-serif text-sm sm:text-lg font-bold text-[#1A1818] mt-2 sm:mt-3">Pure Silver</h2>
+              <p className="text-[11px] sm:text-xs text-[#78716C]">Pooja Articles</p>
             </div>
-            <p className="text-[11px] text-[#A8A29E] mt-2">
-              1 Kilogram: <strong>{formatINR(rates.rateSilver * 1000)}</strong>
-            </p>
+            <div>
+              <div className="mt-3 pt-2 sm:mt-4 sm:pt-3 border-t border-[#F0ECE4]">
+                <span className="text-xl sm:text-3xl font-bold text-[#1A1818]">{formatINR(rates.rateSilver)}</span>
+                <span className="text-[10px] sm:text-xs text-[#78716C] ml-1">/g</span>
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-1 sm:mt-2">
+                1kg: <strong>{formatINR(rates.rateSilver * 1000)}</strong>
+              </p>
+            </div>
           </div>
         </div>
 

@@ -60,8 +60,8 @@ export default function CartPage() {
     <div className="min-h-screen flex flex-col bg-[#FAF7F2]">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-16">
-        <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#1A1818] mb-8 pb-4 border-b border-[#E8E2D8]">
+      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-8 py-8 sm:py-16 pb-24 lg:pb-16">
+        <h1 className="font-serif text-xl sm:text-3xl font-bold text-[#1A1818] mb-6 sm:mb-8 pb-3 sm:pb-4 border-b border-[#E8E2D8]">
           Shopping Bag ({items.length} {items.length === 1 ? 'Design' : 'Designs'})
         </h1>
 

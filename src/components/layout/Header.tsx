@@ -16,6 +16,8 @@ import {
   TrendingUp,
   ChevronDown,
   ShieldCheck,
+  Home,
+  LayoutGrid,
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useGoldRates } from '@/context/GoldRateContext';
@@ -76,26 +78,27 @@ export default function Header() {
   return (
     <header className="w-full select-none z-40 transition-all duration-300">
       {/* Top Bar: Announcement, Live Gold Rate Snippet, Language Switcher */}
-      <div className="bg-[#380B12] text-[#FAF7F2] text-xs py-1.5 px-4 sm:px-8 border-b border-[#581825]/40">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
+      <div className="bg-[#380B12] text-[#FAF7F2] text-xs py-1.5 px-3 sm:px-8 border-b border-[#581825]/40 overflow-hidden w-full">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
           {/* Live Bullion Ticker */}
-          <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-0.5">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 text-[11px] sm:text-xs">
             <span className="flex items-center gap-1.5 font-medium text-[#DFCDAE] whitespace-nowrap">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              {t('rateUpdatedToday')} {rates.effectiveTime}:
+              <span className="hidden sm:inline">{t('rateUpdatedToday')} {rates.effectiveTime}:</span>
+              <span className="sm:hidden font-bold">22K Today:</span>
             </span>
-            <div className="flex items-center gap-3 text-xs whitespace-nowrap">
+            <div className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs whitespace-nowrap">
               <span className="text-[#FAF7F2]/90">
-                22K: <strong className="text-white font-semibold">{formatINR(rates.rate22K)}</strong>
+                <strong className="text-white font-semibold">{formatINR(rates.rate22K)}</strong>
                 <span className="text-[10px] text-[#DFCDAE]/80">/g</span>
               </span>
-              <span className="text-[#FAF7F2]/40">|</span>
-              <span className="text-[#FAF7F2]/90">
+              <span className="text-[#FAF7F2]/40 hidden sm:inline">|</span>
+              <span className="text-[#FAF7F2]/90 hidden sm:inline">
                 24K: <strong className="text-white font-semibold">{formatINR(rates.rate24K)}</strong>
                 <span className="text-[10px] text-[#DFCDAE]/80">/g</span>
               </span>
-              <span className="text-[#FAF7F2]/40">|</span>
-              <span className="text-[#FAF7F2]/90">
+              <span className="text-[#FAF7F2]/40 hidden sm:inline">|</span>
+              <span className="text-[#FAF7F2]/90 hidden sm:inline">
                 Silver: <strong className="text-white font-semibold">{formatINR(rates.rateSilver)}</strong>
                 <span className="text-[10px] text-[#DFCDAE]/80">/g</span>
               </span>
@@ -103,19 +106,19 @@ export default function Header() {
           </div>
 
           {/* Right utility: WhatsApp help & Language switch */}
-          <div className="flex items-center gap-5 whitespace-nowrap">
+          <div className="flex items-center gap-3 whitespace-nowrap shrink-0">
             <a
               href="https://wa.me/919822123456?text=Hello%20Vardhaman%20Jewellers,%20I%20would%20like%20to%20enquire%20about%20your%20jewellery%20collection."
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden lg:flex items-center gap-1.5 text-[#DFCDAE] hover:text-white transition-colors"
+              className="hidden lg:flex items-center gap-1.5 text-[#DFCDAE] hover:text-white transition-colors text-xs"
             >
               <Phone className="w-3 h-3 text-[#C5A880]" />
               <span>WhatsApp Concierge: +91 98221 23456</span>
             </a>
 
             {/* Language Selector */}
-            <div className="flex items-center gap-1 border-l border-[#581825] pl-4">
+            <div className="flex items-center gap-1 border-l border-[#581825] pl-2 sm:pl-4 text-[10px] sm:text-xs">
               <button
                 onClick={() => setLanguage('en')}
                 className={`px-1.5 py-0.5 rounded transition-all ${
@@ -154,36 +157,36 @@ export default function Header() {
       {/* Main Header Bar */}
       <div
         className={`w-full bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#E8E2D8] transition-all duration-300 ${
-          isScrolled ? 'sticky top-0 shadow-md py-2.5' : 'py-4'
+          isScrolled ? 'sticky top-0 shadow-md py-2 sm:py-2.5' : 'py-2.5 sm:py-4'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-8 flex items-center justify-between gap-2 sm:gap-4">
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 text-[#581825] hover:bg-[#F3EDE3] rounded-full transition-colors"
+            className="lg:hidden p-1.5 text-[#581825] hover:bg-[#F3EDE3] rounded-full transition-colors shrink-0"
             aria-label="Toggle menu"
           >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
           {/* Brand Logo & Royal Wordmark */}
-          <Link href="/" className="flex flex-col items-center group">
-            <div className="flex items-center gap-2">
+          <Link href="/" className="flex flex-col items-center group shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {/* Royal Emblem Symbol */}
-              <div className="w-8 h-8 rounded-full border border-[#C5A880] flex items-center justify-center bg-[#FAF7F2] shadow-xs group-hover:scale-105 transition-transform">
-                <span className="font-serif text-sm font-bold text-[#581825] tracking-tight">VJ</span>
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-[#C5A880] flex items-center justify-center bg-[#FAF7F2] shadow-xs group-hover:scale-105 transition-transform">
+                <span className="font-serif text-xs sm:text-sm font-bold text-[#581825] tracking-tight">VJ</span>
               </div>
-              <span className="font-serif text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#380B12] group-hover:text-[#581825] transition-colors">
+              <span className="font-serif text-lg sm:text-2xl md:text-3xl font-bold tracking-tight text-[#380B12] group-hover:text-[#581825] transition-colors">
                 VARDHAMAN
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-4 h-[1px] bg-[#C5A880]"></span>
-              <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-[#9A7B4F] font-semibold">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="w-3 sm:w-4 h-[1px] bg-[#C5A880]"></span>
+              <span className="text-[8px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#9A7B4F] font-semibold">
                 JEWELLERS
               </span>
-              <span className="w-4 h-[1px] bg-[#C5A880]"></span>
+              <span className="w-3 sm:w-4 h-[1px] bg-[#C5A880]"></span>
             </div>
           </Link>
 
@@ -210,11 +213,11 @@ export default function Header() {
           </div>
 
           {/* Action Icons */}
-          <div className="flex items-center gap-3 sm:gap-5">
+          <div className="flex items-center gap-1 sm:gap-4 shrink-0">
             {/* Mobile Search Button */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="lg:hidden p-2 text-[#581825] hover:bg-[#F3EDE3] rounded-full transition-colors"
+              className="lg:hidden p-1.5 text-[#581825] hover:bg-[#F3EDE3] rounded-full transition-colors"
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
@@ -233,12 +236,12 @@ export default function Header() {
             {/* Wishlist */}
             <Link
               href="/wishlist"
-              className="relative p-2 text-[#581825] hover:bg-[#F3EDE3] rounded-full transition-colors"
+              className="relative p-1.5 sm:p-2 text-[#581825] hover:bg-[#F3EDE3] rounded-full transition-colors"
               title={t('wishlist')}
             >
               <Heart className="w-5 h-5" />
               {wishlistCount > 0 && (
-                <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-[#C5A880] text-[#380B12] text-[10px] font-bold flex items-center justify-center shadow-xs">
+                <span className="absolute top-0 right-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#C5A880] text-[#380B12] text-[9px] sm:text-[10px] font-bold flex items-center justify-center shadow-xs">
                   {wishlistCount}
                 </span>
               )}
@@ -247,12 +250,12 @@ export default function Header() {
             {/* Cart Button */}
             <button
               onClick={() => setIsCartDrawerOpen(true)}
-              className="relative p-2 text-[#581825] hover:bg-[#F3EDE3] rounded-full transition-colors"
+              className="relative p-1.5 sm:p-2 text-[#581825] hover:bg-[#F3EDE3] rounded-full transition-colors"
               title={t('cart')}
             >
               <ShoppingBag className="w-5 h-5" />
               {itemCount > 0 && (
-                <span className="absolute top-0 right-0 w-4 h-4 rounded-full bg-[#581825] text-white text-[10px] font-bold flex items-center justify-center shadow-xs">
+                <span className="absolute top-0 right-0 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#581825] text-white text-[9px] sm:text-[10px] font-bold flex items-center justify-center shadow-xs">
                   {itemCount}
                 </span>
               )}
@@ -461,6 +464,76 @@ export default function Header() {
           </div>
         </div>
       )}
+
+      {/* 4. MOBILE BOTTOM NAVIGATION BAR (FIXED) */}
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E8E2D8] py-1 px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+        <div className="flex items-center justify-around text-[10px] font-medium text-[#78716C]">
+          {/* Home */}
+          <Link
+            href="/"
+            className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-colors ${
+              pathname === '/' ? 'text-[#581825] font-bold' : 'hover:text-[#581825]'
+            }`}
+          >
+            <Home className="w-5 h-5" />
+            <span>Home</span>
+          </Link>
+
+          {/* Categories */}
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-colors ${
+              isMobileMenuOpen ? 'text-[#581825] font-bold' : 'hover:text-[#581825]'
+            }`}
+          >
+            <LayoutGrid className="w-5 h-5" />
+            <span>Categories</span>
+          </button>
+
+          {/* Search */}
+          <button
+            onClick={() => {
+              setIsSearchOpen(true);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-colors ${
+              isSearchOpen ? 'text-[#581825] font-bold' : 'hover:text-[#581825]'
+            }`}
+          >
+            <Search className="w-5 h-5" />
+            <span>Search</span>
+          </button>
+
+          {/* Wishlist */}
+          <Link
+            href="/wishlist"
+            className={`flex flex-col items-center gap-0.5 py-1 px-2 relative transition-colors ${
+              pathname === '/wishlist' ? 'text-[#581825] font-bold' : 'hover:text-[#581825]'
+            }`}
+          >
+            <div className="relative">
+              <Heart className="w-5 h-5" />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1 -right-2 w-3.5 h-3.5 rounded-full bg-[#C5A880] text-[#380B12] text-[8px] font-bold flex items-center justify-center">
+                  {wishlistCount}
+                </span>
+              )}
+            </div>
+            <span>Wishlist</span>
+          </Link>
+
+          {/* Account */}
+          <Link
+            href="/profile"
+            className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-colors ${
+              pathname === '/profile' ? 'text-[#581825] font-bold' : 'hover:text-[#581825]'
+            }`}
+          >
+            <User className="w-5 h-5" />
+            <span>Account</span>
+          </Link>
+        </div>
+      </nav>
     </header>
   );
 }

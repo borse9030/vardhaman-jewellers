@@ -189,29 +189,29 @@ export default function ProductCatalog({
   ].filter(Boolean).length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
+    <div className="max-w-7xl mx-auto px-3 sm:px-8 py-6 sm:py-12 pb-24 lg:pb-12">
       {/* Page Title & Breadcrumbs */}
-      <div className="mb-8">
-        <h1 className="font-serif text-2xl sm:text-4xl font-bold text-[#1A1818] tracking-tight">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="font-serif text-xl sm:text-4xl font-bold text-[#1A1818] tracking-tight">
           {pageTitle}
         </h1>
-        <p className="text-xs sm:text-sm text-[#78716C] mt-1.5">{pageSubtitle}</p>
+        <p className="text-xs sm:text-sm text-[#78716C] mt-1 sm:mt-1.5">{pageSubtitle}</p>
       </div>
 
       {/* Top Filter Bar & Sorting */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-8 border-b border-[#E8E2D8]">
+      <div className="flex items-center justify-between gap-2.5 pb-4 sm:pb-6 mb-6 sm:mb-8 border-b border-[#E8E2D8]">
         {/* Results counter & Mobile Filter Trigger */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => setIsMobileFilterOpen(true)}
-            className="lg:hidden flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-[#E8E2D8] text-xs font-semibold text-[#581825] shadow-2xs"
+            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E8E2D8] text-xs font-semibold text-[#581825] shadow-2xs"
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}</span>
           </button>
 
-          <span className="text-xs text-[#78716C]">
-            Showing <strong className="text-[#1A1818] font-bold">{filteredProducts.length}</strong> creations
+          <span className="text-[11px] sm:text-xs text-[#78716C]">
+            <span className="hidden sm:inline">Showing </span><strong className="text-[#1A1818] font-bold">{filteredProducts.length}</strong> items
           </span>
         </div>
 
@@ -427,7 +427,7 @@ export default function ProductCatalog({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-2.5 sm:gap-6">
               {filteredProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}

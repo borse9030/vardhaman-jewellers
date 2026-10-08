@@ -28,10 +28,10 @@ export default function WishlistPage() {
     <div className="min-h-screen flex flex-col bg-[#FAF7F2]">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-8 py-10 sm:py-16">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 mb-8 border-b border-[#E8E2D8] gap-4">
+      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-8 py-8 sm:py-16 pb-24 lg:pb-16">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 sm:pb-6 mb-6 sm:mb-8 border-b border-[#E8E2D8] gap-3 sm:gap-4">
           <div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#1A1818]">
+            <h1 className="font-serif text-xl sm:text-3xl font-bold text-[#1A1818]">
               My Cherished Wishlist
             </h1>
             <p className="text-xs text-[#78716C] mt-1">
@@ -42,7 +42,7 @@ export default function WishlistPage() {
           {wishlist.length > 0 && (
             <button
               onClick={handleShare}
-              className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-xl bg-white border border-[#E8E2D8] text-[#581825] font-semibold hover:bg-[#FAF7F2] shadow-2xs"
+              className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-xl bg-white border border-[#E8E2D8] text-[#581825] font-semibold hover:bg-[#FAF7F2] shadow-2xs self-end sm:self-auto"
             >
               <Share2 className="w-3.5 h-3.5" />
               <span>{copied ? 'Link Copied!' : 'Share Wishlist'}</span>
@@ -51,11 +51,11 @@ export default function WishlistPage() {
         </div>
 
         {wishlist.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-[#E8E2D8] p-12 text-center max-w-md mx-auto">
-            <div className="w-16 h-16 rounded-full bg-[#FAF7F2] border border-[#E8E2D8] flex items-center justify-center mx-auto mb-3">
-              <Heart className="w-7 h-7 text-[#C5A880]" />
+          <div className="bg-white rounded-2xl border border-[#E8E2D8] p-8 sm:p-12 text-center max-w-md mx-auto">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#FAF7F2] border border-[#E8E2D8] flex items-center justify-center mx-auto mb-3">
+              <Heart className="w-6 h-6 sm:w-7 sm:h-7 text-[#C5A880]" />
             </div>
-            <h2 className="font-serif text-lg font-bold text-[#1A1818]">Your Wishlist is Empty</h2>
+            <h2 className="font-serif text-base sm:text-lg font-bold text-[#1A1818]">Your Wishlist is Empty</h2>
             <p className="text-xs text-[#78716C] mt-1 mb-6">
               Save your favorite temple haars, bridal kadas, or diamond rings by clicking the heart icon on any design.
             </p>
@@ -67,7 +67,7 @@ export default function WishlistPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-6">
             {wishlist.map((product) => {
               const breakdown = calculateProductPrice(product, rates);
               return (
@@ -84,33 +84,33 @@ export default function WishlistPage() {
                     />
                     <button
                       onClick={() => removeFromWishlist(product.id)}
-                      className="absolute top-2.5 right-2.5 p-1.5 rounded-full bg-white/90 text-[#78716C] hover:text-red-700 shadow-sm"
+                      className="absolute top-2 right-2 p-1 rounded-full bg-white/90 text-[#78716C] hover:text-red-700 shadow-sm"
                       title="Remove from Wishlist"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div className="p-2.5 sm:p-4 flex-1 flex flex-col justify-between">
                     <div>
-                      <p className="text-[11px] text-[#78716C] mb-1">
+                      <p className="text-[10px] sm:text-[11px] text-[#78716C] mb-0.5 sm:mb-1">
                         {product.purity} • {product.grossWeight}g
                       </p>
                       <Link
                         href={`/product/${product.slug}`}
-                        className="font-serif text-sm font-semibold text-[#1A1818] line-clamp-1 hover:text-[#581825]"
+                        className="font-serif text-xs sm:text-sm font-semibold text-[#1A1818] line-clamp-1 hover:text-[#581825]"
                       >
                         {product.name}
                       </Link>
-                      <div className="mt-2 text-sm font-bold text-[#581825]">
+                      <div className="mt-1 sm:mt-2 text-xs sm:text-sm font-bold text-[#581825]">
                         {formatINR(breakdown.finalPrice)}
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-[#F0ECE4]">
+                    <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-[#F0ECE4]">
                       <button
                         onClick={() => moveToCart(product)}
-                        className="w-full py-2 px-3 rounded-lg bg-[#581825] text-white hover:bg-[#380B12] text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                        className="w-full py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg bg-[#581825] text-white hover:bg-[#380B12] text-[11px] sm:text-xs font-bold transition-colors flex items-center justify-center gap-1"
                       >
                         <ShoppingBag className="w-3.5 h-3.5" />
                         <span>Move to Bag</span>

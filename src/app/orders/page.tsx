@@ -50,9 +50,9 @@ export default function CustomerOrdersPage() {
     <div className="min-h-screen flex flex-col bg-[#FAF7F2]">
       <Header />
 
-      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-8 py-10 sm:py-16">
-        <div className="mb-8 pb-4 border-b border-[#E8E2D8]">
-          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#1A1818]">
+      <main className="flex-1 max-w-5xl mx-auto px-3 sm:px-8 py-8 sm:py-16 pb-24 lg:pb-16">
+        <div className="mb-6 sm:mb-8 pb-3 sm:pb-4 border-b border-[#E8E2D8]">
+          <h1 className="font-serif text-xl sm:text-3xl font-bold text-[#1A1818]">
             Orders & Shipments Tracking
           </h1>
           <p className="text-xs text-[#78716C] mt-1">

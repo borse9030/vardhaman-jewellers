@@ -25,11 +25,21 @@
     border-color: var(--border-luxury);
   }
 
+  html {
+    overflow-x: hidden;
+    max-width: 100%;
+    width: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     background-color: var(--bg-ivory-light);
     color: var(--charcoal-dark);
     font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
+    max-width: 100%;
+    width: 100%;
+    position: relative;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

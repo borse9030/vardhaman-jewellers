@@ -31,38 +31,38 @@ export default function Footer() {
   };
 
   return (
-    <footer className="w-full bg-[#1A1818] text-[#FAF7F2] pt-16 pb-12 border-t border-[#C5A880]/30 select-none">
+    <footer className="w-full bg-[#1A1818] text-[#FAF7F2] pt-10 sm:pt-16 pb-28 lg:pb-12 border-t border-[#C5A880]/30 select-none">
       {/* 1. Trust & Assurance Strip */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 mb-16">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 pb-12 border-b border-[#380B12]/80">
-          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15">
-            <ShieldCheck className="w-8 h-8 text-[#C5A880] mb-2" />
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white">BIS 916 Hallmarked</h4>
-            <p className="text-[11px] text-[#A8A29E] mt-1">100% pure certified gold guaranteed</p>
+      <div className="max-w-7xl mx-auto px-3 sm:px-8 mb-10 sm:mb-16">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-6 pb-8 sm:pb-12 border-b border-[#380B12]/80">
+          <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15">
+            <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8 text-[#C5A880] mb-1.5 sm:mb-2" />
+            <h4 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white">BIS 916 Hallmark</h4>
+            <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-0.5 sm:mt-1">100% pure certified gold guaranteed</p>
           </div>
 
-          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15">
-            <Gem className="w-8 h-8 text-[#C5A880] mb-2" />
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Certified Diamonds</h4>
-            <p className="text-[11px] text-[#A8A29E] mt-1">SGL & IGI natural certified stones</p>
+          <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15">
+            <Gem className="w-6 h-6 sm:w-8 sm:h-8 text-[#C5A880] mb-1.5 sm:mb-2" />
+            <h4 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white">Certified Diamonds</h4>
+            <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-0.5 sm:mt-1">SGL & IGI natural certified stones</p>
           </div>
 
-          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15">
-            <Scale className="w-8 h-8 text-[#C5A880] mb-2" />
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Transparent Pricing</h4>
-            <p className="text-[11px] text-[#A8A29E] mt-1">Clear net weight, rates, and making</p>
+          <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15">
+            <Scale className="w-6 h-6 sm:w-8 sm:h-8 text-[#C5A880] mb-1.5 sm:mb-2" />
+            <h4 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white">Transparent Pricing</h4>
+            <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-0.5 sm:mt-1">Clear net weight, rates, and making</p>
           </div>
 
-          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15">
-            <RefreshCw className="w-8 h-8 text-[#C5A880] mb-2" />
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Lifetime Exchange</h4>
-            <p className="text-[11px] text-[#A8A29E] mt-1">Assured buyback across all stores</p>
+          <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15">
+            <RefreshCw className="w-6 h-6 sm:w-8 sm:h-8 text-[#C5A880] mb-1.5 sm:mb-2" />
+            <h4 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white">Lifetime Exchange</h4>
+            <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-0.5 sm:mt-1">Assured buyback across all stores</p>
           </div>
 
-          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15 col-span-2 md:col-span-1">
-            <Truck className="w-8 h-8 text-[#C5A880] mb-2" />
-            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Insured Shipping</h4>
-            <p className="text-[11px] text-[#A8A29E] mt-1">Tamper-proof transit insurance</p>
+          <div className="flex flex-col items-center text-center p-3 sm:p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15 col-span-2 sm:col-span-1 md:col-span-1">
+            <Truck className="w-6 h-6 sm:w-8 sm:h-8 text-[#C5A880] mb-1.5 sm:mb-2" />
+            <h4 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white">Insured Shipping</h4>
+            <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-0.5 sm:mt-1">Tamper-proof transit insurance</p>
           </div>
         </div>
       </div>

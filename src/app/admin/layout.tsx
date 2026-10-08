@@ -84,27 +84,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </button>
       </div>
 
+      {/* Mobile Drawer Backdrop */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/75 backdrop-blur-xs z-30 lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar Navigation */}
       <aside
-        className={`w-72 bg-[#171515] border-r border-white/10 flex flex-col justify-between shrink-0 z-30 transition-all ${
-          mobileMenuOpen ? 'fixed inset-y-0 left-0 shadow-2xl block' : 'hidden lg:flex'
+        className={`w-72 bg-[#171515] border-r border-white/10 flex flex-col justify-between shrink-0 z-40 transition-all ${
+          mobileMenuOpen ? 'fixed inset-y-0 left-0 shadow-2xl flex' : 'hidden lg:flex'
         }`}
       >
         <div>
           {/* Brand Emblem Header */}
           <div className="p-6 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full border-2 border-[#C5A880] flex items-center justify-center bg-[#2B2625] shadow-md">
-                <span className="font-serif text-sm font-bold text-[#C5A880]">VJ</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full border-2 border-[#C5A880] flex items-center justify-center bg-[#2B2625] shadow-md">
+                  <span className="font-serif text-sm font-bold text-[#C5A880]">VJ</span>
+                </div>
+                <div>
+                  <h1 className="font-serif text-base font-bold text-white tracking-tight">
+                    VARDHAMAN
+                  </h1>
+                  <p className="text-[10px] uppercase tracking-widest text-[#C5A880]">
+                    Admin Console
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="font-serif text-base font-bold text-white tracking-tight">
-                  VARDHAMAN
-                </h1>
-                <p className="text-[10px] uppercase tracking-widest text-[#C5A880]">
-                  Admin Console
-                </p>
-              </div>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="lg:hidden p-1.5 rounded-lg bg-[#2B2625] text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             {/* Admin User Chip */}
@@ -193,7 +209,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Content View */}
-        <main className="flex-1 p-6 sm:p-8 overflow-y-auto">
+        <main className="flex-1 p-3.5 sm:p-8 overflow-y-auto min-w-0">
           {children}
         </main>
       </div>

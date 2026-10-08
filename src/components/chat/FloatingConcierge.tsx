@@ -89,22 +89,22 @@ export default function FloatingConcierge() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 select-none">
+    <div className="fixed bottom-16 sm:bottom-6 right-3 sm:right-6 z-50 select-none">
       {/* Floating Trigger Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="relative group flex items-center gap-2.5 bg-[#581825] hover:bg-[#380B12] text-[#FAF7F2] py-3 px-4 rounded-full shadow-2xl border border-[#C5A880]/50 transition-all duration-300 hover:scale-105"
+          className="relative group flex items-center gap-2 bg-[#581825] hover:bg-[#380B12] text-[#FAF7F2] py-2.5 px-3.5 sm:py-3 sm:px-4 rounded-full shadow-2xl border border-[#C5A880]/50 transition-all duration-300 hover:scale-105"
           aria-label="Open Jewellery Assistant"
         >
           <div className="relative">
-            <Sparkles className="w-5 h-5 text-[#C5A880] animate-pulse" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#581825]"></span>
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#C5A880] animate-pulse" />
+            <span className="absolute -top-1 -right-1 w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-emerald-400 border-2 border-[#581825]"></span>
           </div>
           <span className="font-serif text-xs font-semibold tracking-wide hidden sm:inline">
             Vardhaman Sahayak
           </span>
-          <span className="text-[10px] bg-[#C5A880] text-[#380B12] px-1.5 py-0.5 rounded-full font-bold">
+          <span className="text-[9px] sm:text-[10px] bg-[#C5A880] text-[#380B12] px-1.5 py-0.5 rounded-full font-bold">
             Live
           </span>
         </button>
@@ -112,7 +112,7 @@ export default function FloatingConcierge() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="w-[90vw] sm:w-96 h-[540px] max-h-[85vh] bg-white rounded-2xl shadow-2xl border border-[#E8E2D8] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="w-[calc(100vw-1.5rem)] sm:w-96 max-w-sm h-[480px] sm:h-[540px] max-h-[78vh] bg-white rounded-2xl shadow-2xl border border-[#E8E2D8] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
           {/* Header */}
           <div className="bg-[#380B12] text-[#FAF7F2] p-4 flex items-center justify-between border-b border-[#581825]">
             <div className="flex items-center gap-2.5">

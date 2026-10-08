@@ -124,9 +124,9 @@ Please provide availability and viewing slot details.`;
     <div className="min-h-screen flex flex-col bg-[#FAF7F2]">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
+      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-8 py-6 sm:py-12 pb-24 lg:pb-12">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-1.5 text-xs text-[#78716C] mb-8 overflow-x-auto whitespace-nowrap">
+        <nav className="flex items-center gap-1.5 text-xs text-[#78716C] mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap no-scrollbar">
           <Link href="/" className="hover:text-[#581825]">Home</Link>
           <ChevronRight className="w-3.5 h-3.5 text-[#A8A29E]" />
           <Link href="/shop" className="hover:text-[#581825]">Jewellery</Link>
@@ -179,12 +179,12 @@ Please provide availability and viewing slot details.`;
 
             {/* Thumbnail Navigation */}
             {gallery.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2">
+              <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 no-scrollbar">
                 {gallery.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImageIndex(idx)}
-                    className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${
+                    className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
                       selectedImageIndex === idx ? 'border-[#581825] shadow-xs' : 'border-transparent opacity-70 hover:opacity-100'
                     }`}
                   >
@@ -338,24 +338,24 @@ Please provide availability and viewing slot details.`;
               </button>
 
               {/* WhatsApp Enquiry & Book Appointment */}
-              <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-1">
                 <a
                   href={whatsappUrl}
                   onClick={handleWhatsAppClick}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-2.5 px-3 rounded-xl border border-emerald-500 text-emerald-700 hover:bg-emerald-50 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                  className="py-2.5 px-2 sm:px-3 rounded-xl border border-emerald-500 text-emerald-700 hover:bg-emerald-50 text-[11px] sm:text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 text-center"
                 >
-                  <MessageCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Enquire on WhatsApp</span>
+                  <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0" />
+                  <span className="truncate">WhatsApp Enquiry</span>
                 </a>
 
                 <Link
                   href="/book-appointment"
-                  className="py-2.5 px-3 rounded-xl border border-[#C5A880] text-[#581825] hover:bg-[#FAF7F2] text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                  className="py-2.5 px-2 sm:px-3 rounded-xl border border-[#C5A880] text-[#581825] hover:bg-[#FAF7F2] text-[11px] sm:text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 text-center"
                 >
-                  <Calendar className="w-4 h-4 text-[#C5A880]" />
-                  <span>Book In-Store Viewing</span>
+                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C5A880] shrink-0" />
+                  <span className="truncate">Book In-Store</span>
                 </Link>
               </div>
             </div>
@@ -383,36 +383,36 @@ Please provide availability and viewing slot details.`;
         </div>
 
         {/* Detailed Tabs: Specifications, Policies, Care */}
-        <div className="mt-16 pt-10 border-t border-[#E8E2D8]">
-          <div className="flex gap-6 border-b border-[#E8E2D8] pb-3 text-sm font-semibold">
+        <div className="mt-12 sm:mt-16 pt-8 sm:pt-10 border-t border-[#E8E2D8]">
+          <div className="flex gap-4 sm:gap-6 border-b border-[#E8E2D8] pb-2 sm:pb-3 text-xs sm:text-sm font-semibold overflow-x-auto whitespace-nowrap no-scrollbar">
             <button
               onClick={() => setActiveTab('specs')}
-              className={`pb-2 transition-colors relative ${
+              className={`pb-2 transition-colors relative shrink-0 ${
                 activeTab === 'specs' ? 'text-[#581825] font-bold' : 'text-[#78716C] hover:text-[#1A1818]'
               }`}
             >
               Product Specifications
-              {activeTab === 'specs' && <span className="absolute bottom-[-13px] inset-x-0 h-0.5 bg-[#581825]"></span>}
+              {activeTab === 'specs' && <span className="absolute bottom-[-9px] sm:bottom-[-13px] inset-x-0 h-0.5 bg-[#581825]"></span>}
             </button>
 
             <button
               onClick={() => setActiveTab('policies')}
-              className={`pb-2 transition-colors relative ${
+              className={`pb-2 transition-colors relative shrink-0 ${
                 activeTab === 'policies' ? 'text-[#581825] font-bold' : 'text-[#78716C] hover:text-[#1A1818]'
               }`}
             >
               Lifetime Exchange & Buyback
-              {activeTab === 'policies' && <span className="absolute bottom-[-13px] inset-x-0 h-0.5 bg-[#581825]"></span>}
+              {activeTab === 'policies' && <span className="absolute bottom-[-9px] sm:bottom-[-13px] inset-x-0 h-0.5 bg-[#581825]"></span>}
             </button>
 
             <button
               onClick={() => setActiveTab('care')}
-              className={`pb-2 transition-colors relative ${
+              className={`pb-2 transition-colors relative shrink-0 ${
                 activeTab === 'care' ? 'text-[#581825] font-bold' : 'text-[#78716C] hover:text-[#1A1818]'
               }`}
             >
-              Jewellery Care Instructions
-              {activeTab === 'care' && <span className="absolute bottom-[-13px] inset-x-0 h-0.5 bg-[#581825]"></span>}
+              Jewellery Care
+              {activeTab === 'care' && <span className="absolute bottom-[-9px] sm:bottom-[-13px] inset-x-0 h-0.5 bg-[#581825]"></span>}
             </button>
           </div>
 
@@ -470,11 +470,11 @@ Please provide availability and viewing slot details.`;
 
         {/* Related Creations */}
         {relatedProducts.length > 0 && (
-          <div className="mt-16 pt-12 border-t border-[#E8E2D8]">
-            <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#1A1818] mb-6">
+          <div className="mt-12 sm:mt-16 pt-8 sm:pt-12 border-t border-[#E8E2D8]">
+            <h2 className="font-serif text-lg sm:text-2xl font-bold text-[#1A1818] mb-6">
               You May Also Admire
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-6">
               {relatedProducts.slice(0, 4).map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}

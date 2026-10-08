@@ -78,7 +78,7 @@ function OrderSuccessContent() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-8 py-10 sm:py-16">
+    <div className="max-w-4xl mx-auto px-3 sm:px-8 py-8 sm:py-16 pb-24 lg:pb-16">
       {/* Success Banner */}
       <div className="text-center mb-10 no-print">
         <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto mb-3 text-emerald-600 shadow-xs">

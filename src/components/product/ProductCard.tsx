@@ -65,19 +65,19 @@ Please share more details with me.`;
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Badges Bar */}
-        <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1 items-start">
+        <div className="absolute top-1.5 sm:top-2.5 left-1.5 sm:left-2.5 z-10 flex flex-col gap-1 items-start">
           {product.bestSeller && (
-            <span className="px-2 py-0.5 rounded-sm bg-[#581825] text-white text-[10px] font-bold tracking-wider uppercase">
+            <span className="px-1.5 sm:px-2 py-0.5 rounded-sm bg-[#581825] text-white text-[9px] sm:text-[10px] font-bold tracking-wider uppercase">
               Bestseller
             </span>
           )}
           {product.newArrival && (
-            <span className="px-2 py-0.5 rounded-sm bg-[#C5A880] text-[#380B12] text-[10px] font-bold tracking-wider uppercase">
+            <span className="px-1.5 sm:px-2 py-0.5 rounded-sm bg-[#C5A880] text-[#380B12] text-[9px] sm:text-[10px] font-bold tracking-wider uppercase">
               New
             </span>
           )}
           {product.purity === '22K' && (
-            <span className="px-2 py-0.5 rounded-sm bg-[#FAF7F2] text-[#581825] border border-[#E8E2D8] text-[9px] font-semibold flex items-center gap-1 shadow-2xs">
+            <span className="px-1.5 sm:px-2 py-0.5 rounded-sm bg-[#FAF7F2] text-[#581825] border border-[#E8E2D8] text-[8px] sm:text-[9px] font-semibold flex items-center gap-1 shadow-2xs">
               <ShieldCheck className="w-2.5 h-2.5 text-[#581825]" />
               22K 916
             </span>
@@ -90,11 +90,11 @@ Please share more details with me.`;
             e.preventDefault();
             toggleWishlist(product);
           }}
-          className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#581825] hover:bg-[#581825] hover:text-white transition-all shadow-xs"
+          className="absolute top-1.5 sm:top-2.5 right-1.5 sm:right-2.5 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#581825] hover:bg-[#581825] hover:text-white transition-all shadow-xs"
           title={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
           aria-label="Wishlist"
         >
-          <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-[#581825] text-[#581825] group-hover:fill-white' : ''}`} />
+          <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isWishlisted ? 'fill-[#581825] text-[#581825] group-hover:fill-white' : ''}`} />
         </button>
 
         {/* Image Display with Secondary Image Hover */}
@@ -108,8 +108,8 @@ Please share more details with me.`;
             loading="lazy"
           />
 
-          {/* Quick View Button overlay on hover (Desktop) */}
-          <div className="absolute inset-x-0 bottom-3 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          {/* Quick View Button overlay on hover (Desktop only) */}
+          <div className="hidden sm:flex absolute inset-x-0 bottom-3 justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -124,28 +124,28 @@ Please share more details with me.`;
         </Link>
 
         {/* Details Content */}
-        <div className="p-3.5 flex flex-col flex-1 justify-between bg-white">
+        <div className="p-2 sm:p-3.5 flex flex-col flex-1 justify-between bg-white">
           <div>
             {/* Metal & Weight Chips */}
-            <div className="flex items-center justify-between text-[11px] text-[#78716C] mb-1">
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-[#78716C] mb-1">
               <span>{product.purity} • {product.metalType}</span>
               <span className="font-medium text-[#2B2625]">{product.grossWeight}g</span>
             </div>
 
             {/* Product Title */}
             <Link href={`/product/${product.slug}`} className="block">
-              <h3 className="font-serif text-sm font-semibold text-[#1A1818] line-clamp-1 hover:text-[#581825] transition-colors">
+              <h3 className="font-serif text-xs sm:text-sm font-semibold text-[#1A1818] line-clamp-1 hover:text-[#581825] transition-colors leading-tight">
                 {product.name}
               </h3>
             </Link>
 
             {/* Price Display */}
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-base font-bold text-[#581825]">
+            <div className="mt-1 sm:mt-2 flex flex-wrap items-baseline gap-1 sm:gap-2">
+              <span className="text-sm sm:text-base font-bold text-[#581825]">
                 {formatINR(priceBreakdown.finalPrice)}
               </span>
               {product.compareAtPrice && product.compareAtPrice > priceBreakdown.finalPrice && (
-                <span className="text-xs text-[#A8A29E] line-through">
+                <span className="text-[10px] sm:text-xs text-[#A8A29E] line-through">
                   {formatINR(product.compareAtPrice)}
                 </span>
               )}
@@ -153,19 +153,19 @@ Please share more details with me.`;
 
             {/* Dynamic Gold Rate Reference Tag */}
             {product.isDynamicPricing && (
-              <p className="text-[10px] text-[#9A7B4F] mt-0.5">
-                Dynamic price based on live {product.purity} rate
+              <p className="text-[9px] sm:text-[10px] text-[#9A7B4F] mt-0.5 truncate">
+                Dynamic based on live {product.purity}
               </p>
             )}
           </div>
 
           {/* Card Actions */}
-          <div className="mt-3.5 pt-3 border-t border-[#F0ECE4] flex items-center gap-2">
+          <div className="mt-2 sm:mt-3.5 pt-2 sm:pt-3 border-t border-[#F0ECE4] flex items-center gap-1 sm:gap-2">
             <button
               onClick={() => addToCart(product, 1)}
-              className="flex-1 bg-[#FAF7F2] hover:bg-[#581825] text-[#581825] hover:text-white py-1.5 px-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 border border-[#E8E2D8] hover:border-[#581825]"
+              className="flex-1 bg-[#FAF7F2] hover:bg-[#581825] text-[#581825] hover:text-white py-1 sm:py-1.5 px-1 sm:px-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all flex items-center justify-center gap-1 border border-[#E8E2D8] hover:border-[#581825]"
             >
-              <ShoppingBag className="w-3.5 h-3.5" />
+              <ShoppingBag className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               <span>Add</span>
             </button>
 
@@ -174,11 +174,11 @@ Please share more details with me.`;
               onClick={handleWhatsAppClick}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 rounded-lg text-[#25D366] hover:bg-emerald-50 border border-emerald-200 transition-colors"
+              className="p-1 sm:p-1.5 rounded-lg text-[#25D366] hover:bg-emerald-50 border border-emerald-200 transition-colors shrink-0"
               title="Enquire on WhatsApp"
               aria-label="Enquire on WhatsApp"
             >
-              <MessageCircle className="w-4 h-4" />
+              <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </a>
           </div>
         </div>
