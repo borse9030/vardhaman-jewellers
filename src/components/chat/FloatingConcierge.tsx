@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { MessageSquare, X, Send, Sparkles, MessageCircle, Phone, ArrowUpRight } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useGoldRates } from '@/context/GoldRateContext';
@@ -116,8 +117,14 @@ export default function FloatingConcierge() {
           {/* Header */}
           <div className="bg-[#380B12] text-[#FAF7F2] p-4 flex items-center justify-between border-b border-[#581825]">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full border border-[#C5A880] flex items-center justify-center bg-[#581825]">
-                <Sparkles className="w-4 h-4 text-[#C5A880]" />
+              <div className="w-8 h-8 rounded-full border border-[#C5A880] flex items-center justify-center bg-[#581825] p-1 overflow-hidden shrink-0">
+                <Image
+                  src="/logo-monogram-gold.png"
+                  alt="Vardhaman Jewellers"
+                  width={24}
+                  height={24}
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h3 className="font-serif text-sm font-bold leading-tight">Vardhaman Sahayak</h3>

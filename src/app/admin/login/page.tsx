@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 import { ShieldCheck, Lock, Mail, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -43,13 +45,17 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md relative z-10">
         {/* Brand Emblem */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-full border-2 border-[#C5A880] flex items-center justify-center bg-[#2B2625] mx-auto mb-3 shadow-lg">
-            <span className="font-serif text-lg font-bold text-[#C5A880]">VJ</span>
-          </div>
-          <h1 className="font-serif text-2xl font-bold tracking-tight text-white">
-            VARDHAMAN JEWELLERS
-          </h1>
-          <p className="text-[11px] uppercase tracking-[0.25em] text-[#C5A880] font-semibold mt-0.5">
+          <Link href="/" className="inline-block group mb-3" aria-label="Return to Store">
+            <Image
+              src="/logo-gold.png"
+              alt="Vardhaman Jewellers"
+              width={220}
+              height={70}
+              priority
+              className="h-16 w-auto object-contain mx-auto transition-transform group-hover:scale-105"
+            />
+          </Link>
+          <p className="text-[11px] uppercase tracking-[0.25em] text-[#C5A880] font-semibold">
             Administration & Bullion Portal
           </p>
         </div>

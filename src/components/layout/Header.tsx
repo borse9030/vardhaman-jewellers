@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Search,
@@ -171,23 +172,15 @@ export default function Header() {
           </button>
 
           {/* Brand Logo & Royal Wordmark */}
-          <Link href="/" className="flex flex-col items-center group shrink-0">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              {/* Royal Emblem Symbol */}
-              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-[#C5A880] flex items-center justify-center bg-[#FAF7F2] shadow-xs group-hover:scale-105 transition-transform">
-                <span className="font-serif text-xs sm:text-sm font-bold text-[#581825] tracking-tight">VJ</span>
-              </div>
-              <span className="font-serif text-lg sm:text-2xl md:text-3xl font-bold tracking-tight text-[#380B12] group-hover:text-[#581825] transition-colors">
-                VARDHAMAN
-              </span>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-2">
-              <span className="w-3 sm:w-4 h-[1px] bg-[#C5A880]"></span>
-              <span className="text-[8px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[#9A7B4F] font-semibold">
-                JEWELLERS
-              </span>
-              <span className="w-3 sm:w-4 h-[1px] bg-[#C5A880]"></span>
-            </div>
+          <Link href="/" className="flex items-center group shrink-0 py-0.5" aria-label="Vardhaman Jewellers Home">
+            <Image
+              src="/logo.png"
+              alt="Vardhaman Jewellers"
+              width={180}
+              height={56}
+              priority
+              className="h-9 sm:h-11 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+            />
           </Link>
 
           {/* Large Centered Search Bar (Desktop) */}
@@ -391,11 +384,16 @@ export default function Header() {
           ></div>
           <div className="relative w-4/5 max-w-sm bg-[#FAF7F2] h-full shadow-2xl flex flex-col z-10 overflow-y-auto">
             {/* Drawer Header */}
-            <div className="p-5 border-b border-[#E8E2D8] flex items-center justify-between bg-white">
-              <div className="flex items-center gap-2">
-                <span className="font-serif text-lg font-bold text-[#380B12]">VARDHAMAN</span>
-                <span className="text-[10px] tracking-widest text-[#9A7B4F]">JEWELLERS</span>
-              </div>
+            <div className="p-4 border-b border-[#E8E2D8] flex items-center justify-between bg-white">
+              <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center">
+                <Image
+                  src="/logo.png"
+                  alt="Vardhaman Jewellers"
+                  width={140}
+                  height={45}
+                  className="h-8 w-auto object-contain"
+                />
+              </Link>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-1.5 text-[#581825] hover:bg-[#F3EDE3] rounded-full"

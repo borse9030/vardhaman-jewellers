@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -70,10 +71,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-[#0F0E0E] text-[#E8E2D8] flex flex-col lg:flex-row selection:bg-[#581825] selection:text-white">
       {/* Mobile Header Bar */}
       <div className="lg:hidden bg-[#1A1818] border-b border-white/10 p-4 flex items-center justify-between z-20">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full border border-[#C5A880] flex items-center justify-center bg-[#2B2625]">
-            <span className="font-serif text-xs font-bold text-[#C5A880]">VJ</span>
-          </div>
+        <div className="flex items-center gap-2.5">
+          <Image
+            src="/logo-monogram-gold.png"
+            alt="Vardhaman Admin"
+            width={28}
+            height={28}
+            className="w-7 h-7 object-contain"
+          />
           <span className="font-serif font-bold text-sm text-white">Vardhaman Admin</span>
         </div>
         <button
@@ -102,19 +107,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Brand Emblem Header */}
           <div className="p-6 border-b border-white/10">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full border-2 border-[#C5A880] flex items-center justify-center bg-[#2B2625] shadow-md">
-                  <span className="font-serif text-sm font-bold text-[#C5A880]">VJ</span>
-                </div>
-                <div>
-                  <h1 className="font-serif text-base font-bold text-white tracking-tight">
-                    VARDHAMAN
-                  </h1>
-                  <p className="text-[10px] uppercase tracking-widest text-[#C5A880]">
-                    Admin Console
-                  </p>
-                </div>
-              </div>
+              <Link href="/admin" className="flex items-center gap-2">
+                <Image
+                  src="/logo-gold.png"
+                  alt="Vardhaman Admin"
+                  width={150}
+                  height={48}
+                  className="h-9 w-auto object-contain"
+                />
+              </Link>
               <button
                 onClick={() => setMobileMenuOpen(false)}
                 className="lg:hidden p-1.5 rounded-lg bg-[#2B2625] text-white"

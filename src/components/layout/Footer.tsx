@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ShieldCheck,
   Gem,
@@ -72,14 +73,17 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#2B2625]">
           {/* Brand Bio */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-full border border-[#C5A880] flex items-center justify-center bg-[#2B2625]">
-                <span className="font-serif text-sm font-bold text-[#C5A880]">VJ</span>
-              </div>
-              <div>
-                <h3 className="font-serif text-xl font-bold tracking-tight text-white">VARDHAMAN JEWELLERS</h3>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-[#C5A880]">Heritage & Purity Since 1984</p>
-              </div>
+            <div className="space-y-2">
+              <Link href="/" className="inline-block group" aria-label="Vardhaman Jewellers Home">
+                <Image
+                  src="/logo-gold.png"
+                  alt="Vardhaman Jewellers"
+                  width={200}
+                  height={64}
+                  className="h-11 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105"
+                />
+              </Link>
+              <p className="text-[10px] uppercase tracking-[0.25em] text-[#C5A880] font-medium">Heritage & Purity Since 1984</p>
             </div>
 
             <p className="text-xs text-[#A8A29E] leading-relaxed max-w-sm">

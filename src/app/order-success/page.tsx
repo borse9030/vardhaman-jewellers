@@ -116,8 +116,14 @@ function OrderSuccessContent() {
         {/* Invoice Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start pb-6 border-b border-[#E8E2D8] gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-serif text-2xl font-bold text-[#380B12]">VARDHAMAN JEWELLERS</span>
+            <div className="flex items-center gap-3 mb-2">
+              <Image
+                src="/logo.png"
+                alt="Vardhaman Jewellers"
+                width={160}
+                height={50}
+                className="h-10 w-auto object-contain"
+              />
             </div>
             <p className="text-[11px] text-[#78716C] mt-0.5">Head Office: MG Road, Golani Market, Jalgaon - 425001</p>
             <p className="text-[11px] text-[#78716C]">GSTIN: 27AABCV8421Q1Z8 • BIS Hallmark Reg: HM-MH-916-84210</p>

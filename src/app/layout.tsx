@@ -41,6 +41,18 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Vardhaman Jewellers' }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon.png', type: 'image/png' },
+      { url: '/icon.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+  },
   openGraph: {
     title: 'Vardhaman Jewellers | Pure Gold, Certified Diamonds & Heritage Jewellery',
     description:
@@ -48,6 +60,14 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_IN',
     siteName: 'Vardhaman Jewellers',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1024,
+        height: 680,
+        alt: 'Vardhaman Jewellers Official Brand Logo',
+      },
+    ],
   },
 };
 
@@ -61,6 +81,7 @@ export default function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'JewelryStore',
     name: 'Vardhaman Jewellers',
+    logo: 'https://vardhamanjewellers.in/logo.png',
     image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=80',
     '@id': 'https://vardhamanjewellers.in',
     url: 'https://vardhamanjewellers.in',
