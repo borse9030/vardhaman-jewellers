@@ -1,0 +1,208 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import {
+  ShieldCheck,
+  Gem,
+  Scale,
+  RefreshCw,
+  Truck,
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  ArrowRight,
+  CheckCircle2,
+} from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
+
+export default function Footer() {
+  const { t } = useLanguage();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newsletterEmail) {
+      setSubscribed(true);
+      setNewsletterEmail('');
+    }
+  };
+
+  return (
+    <footer className="w-full bg-[#1A1818] text-[#FAF7F2] pt-16 pb-12 border-t border-[#C5A880]/30 select-none">
+      {/* 1. Trust & Assurance Strip */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 pb-12 border-b border-[#380B12]/80">
+          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15">
+            <ShieldCheck className="w-8 h-8 text-[#C5A880] mb-2" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white">BIS 916 Hallmarked</h4>
+            <p className="text-[11px] text-[#A8A29E] mt-1">100% pure certified gold guaranteed</p>
+          </div>
+
+          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15">
+            <Gem className="w-8 h-8 text-[#C5A880] mb-2" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Certified Diamonds</h4>
+            <p className="text-[11px] text-[#A8A29E] mt-1">SGL & IGI natural certified stones</p>
+          </div>
+
+          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15">
+            <Scale className="w-8 h-8 text-[#C5A880] mb-2" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Transparent Pricing</h4>
+            <p className="text-[11px] text-[#A8A29E] mt-1">Clear net weight, rates, and making</p>
+          </div>
+
+          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15">
+            <RefreshCw className="w-8 h-8 text-[#C5A880] mb-2" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Lifetime Exchange</h4>
+            <p className="text-[11px] text-[#A8A29E] mt-1">Assured buyback across all stores</p>
+          </div>
+
+          <div className="flex flex-col items-center text-center p-4 rounded-xl bg-[#2B2625]/40 border border-[#C5A880]/15 col-span-2 md:col-span-1">
+            <Truck className="w-8 h-8 text-[#C5A880] mb-2" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-white">Insured Shipping</h4>
+            <p className="text-[11px] text-[#A8A29E] mt-1">Tamper-proof transit insurance</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Main Footer Navigation Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#2B2625]">
+          {/* Brand Bio */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-full border border-[#C5A880] flex items-center justify-center bg-[#2B2625]">
+                <span className="font-serif text-sm font-bold text-[#C5A880]">VJ</span>
+              </div>
+              <div>
+                <h3 className="font-serif text-xl font-bold tracking-tight text-white">VARDHAMAN JEWELLERS</h3>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-[#C5A880]">Heritage & Purity Since 1984</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#A8A29E] leading-relaxed max-w-sm">
+              Rooted in the rich cultural soil of Maharashtra and Khandesh, Vardhaman Jewellers celebrates life’s most precious milestones with timeless hallmarked gold, certified solitaires, and royal bridal heirlooms.
+            </p>
+
+            <div className="pt-2 space-y-2 text-xs text-[#D6D3D1]">
+              <div className="flex items-center gap-2.5">
+                <Phone className="w-3.5 h-3.5 text-[#C5A880]" />
+                <span>Customer Concierge: +91 257 222 4589 / +91 98221 23456</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Mail className="w-3.5 h-3.5 text-[#C5A880]" />
+                <span>care@vardhamanjewellers.in</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Clock className="w-3.5 h-3.5 text-[#C5A880]" />
+                <span>Mon – Sun: 10:00 AM – 8:30 PM</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Categories */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#C5A880] mb-4">
+              Jewellery Categories
+            </h4>
+            <ul className="space-y-2.5 text-xs text-[#A8A29E]">
+              <li><Link href="/necklaces" className="hover:text-white transition-colors">Temple Haars & Chokers</Link></li>
+              <li><Link href="/bangles" className="hover:text-white transition-colors">Patlya, Pichodi & Kadas</Link></li>
+              <li><Link href="/mangalsutra" className="hover:text-white transition-colors">Traditional Wati Mangalsutras</Link></li>
+              <li><Link href="/diamond" className="hover:text-white transition-colors">Solitaire Engagement Rings</Link></li>
+              <li><Link href="/earrings" className="hover:text-white transition-colors">Chandbalis & Jhumkas</Link></li>
+              <li><Link href="/silver" className="hover:text-white transition-colors">Pure 925 Silver Pooja Articles</Link></li>
+              <li><Link href="/wedding" className="hover:text-white transition-colors">Bridal Wedding Trousseau</Link></li>
+            </ul>
+          </div>
+
+          {/* Services & Guidance */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#C5A880] mb-4">
+              Services & Bullion
+            </h4>
+            <ul className="space-y-2.5 text-xs text-[#A8A29E]">
+              <li><Link href="/gold-rate" className="hover:text-white transition-colors">Today's Live Gold Rate</Link></li>
+              <li><Link href="/sell-gold" className="hover:text-white transition-colors">Sell / Exchange Old Gold</Link></li>
+              <li><Link href="/book-appointment" className="hover:text-white transition-colors">Book VIP In-Store Appointment</Link></li>
+              <li><Link href="/stores" className="hover:text-white transition-colors">Store Locator & Directions</Link></li>
+              <li><Link href="/gold-buying-guide" className="hover:text-white transition-colors">22K vs 24K Gold Buying Guide</Link></li>
+              <li><Link href="/about" className="hover:text-white transition-colors">Our 40-Year Heritage Story</Link></li>
+              <li><Link href="/faq" className="hover:text-white transition-colors">Frequently Asked Questions</Link></li>
+            </ul>
+          </div>
+
+          {/* Concierge & Policies */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#C5A880] mb-4">
+              Assistance & Trust
+            </h4>
+            <ul className="space-y-2.5 text-xs text-[#A8A29E] mb-6">
+              <li><Link href="/orders" className="hover:text-white transition-colors">Track Your Order</Link></li>
+              <li><Link href="/shipping" className="hover:text-white transition-colors">Shipping & Transit Insurance</Link></li>
+              <li><Link href="/returns" className="hover:text-white transition-colors">Return & Buyback Policy</Link></li>
+              <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link href="/admin" className="hover:text-[#C5A880] transition-colors text-white font-medium">Admin Portal</Link></li>
+            </ul>
+
+            {/* Newsletter */}
+            <div>
+              <p className="text-[11px] text-[#A8A29E] mb-2">Subscribe to daily gold rate alerts:</p>
+              {subscribed ? (
+                <div className="flex items-center gap-1.5 text-xs text-emerald-400">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Subscribed successfully!</span>
+                </div>
+              ) : (
+                <form onSubmit={handleSubscribe} className="flex items-center">
+                  <input
+                    type="email"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    required
+                    placeholder="Enter email or mobile"
+                    className="w-full bg-[#2B2625] text-xs px-3 py-2 rounded-l border border-[#C5A880]/30 focus:outline-none focus:border-[#C5A880] text-white"
+                  />
+                  <button
+                    type="submit"
+                    className="bg-[#C5A880] hover:bg-[#B89758] text-[#1A1818] px-3 py-2 rounded-r transition-colors"
+                  >
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Physical Stores Footnote */}
+        <div className="py-6 border-b border-[#2B2625] text-xs text-[#78716C] flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="font-semibold text-[#D6D3D1]">Our Flagship Outlets:</span>
+            <span>Jalgaon (MG Road)</span>
+            <span>•</span>
+            <span>Dhule (Agra Road)</span>
+            <span>•</span>
+            <span>Pune (Swargate)</span>
+            <span>•</span>
+            <span>Mumbai (Dadar West)</span>
+          </div>
+          <div className="text-[11px]">
+            BIS Hallmark Reg. No: <strong className="text-[#A8A29E]">HM-MH-916-84210</strong>
+          </div>
+        </div>
+
+        {/* 4. Bottom Copyright */}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#78716C] gap-3">
+          <p>© {new Date().getFullYear()} Vardhaman Jewellers. All Rights Reserved.</p>
+          <p className="text-[#A8A29E]">
+            Designed with devotion for authentic Indian luxury jewellery connoisseurs.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}

@@ -1,26 +1,117 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg-ivory: #FAF7F2;
+    --bg-ivory-light: #FDFBF7;
+    --bg-ivory-warm: #F4EDE4;
+    --wine-dark: #380B12;
+    --wine-primary: #581825;
+    --wine-light: #7E2638;
+    --wine-subtle: #F6EBEF;
+    --gold-primary: #C5A880;
+    --gold-dark: #9A7B4F;
+    --gold-light: #DFCDAE;
+    --gold-subtle: #F9F6F0;
+    --charcoal-black: #1A1818;
+    --charcoal-dark: #2B2625;
+    --charcoal-muted: #6B6562;
+    --charcoal-light: #9B9590;
+    --border-luxury: #E8E2D8;
+    --border-luxury-subtle: #F0ECE4;
+  }
+
+  * {
+    border-color: var(--border-luxury);
+  }
+
+  body {
+    background-color: var(--bg-ivory-light);
+    color: var(--charcoal-dark);
+    font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, .font-serif-luxury {
+    font-family: var(--font-serif), Georgia, Cambria, 'Times New Roman', Times, serif;
+    letter-spacing: -0.01em;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Luxury micro-interactions & custom classes */
+.bg-ivory { background-color: #FAF7F2; }
+.bg-ivory-light { background-color: #FDFBF7; }
+.bg-ivory-warm { background-color: #F4EDE4; }
+.bg-wine { background-color: #581825; }
+.bg-wine-dark { background-color: #380B12; }
+.bg-gold { background-color: #C5A880; }
+.text-wine { color: #581825; }
+.text-wine-dark { color: #380B12; }
+.text-gold { color: #9A7B4F; }
+.text-gold-light { color: #C5A880; }
+.border-gold { border-color: #C5A880; }
+.border-wine { border-color: #581825; }
+.border-luxury { border-color: #E8E2D8; }
+
+/* Custom Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF7F2;
+}
+::-webkit-scrollbar-thumb {
+  background: #D5CBBC;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9A7B4F;
+}
+
+/* Subtle Shimmer for Skeleton Loading */
+@keyframes luxury-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.luxury-shimmer {
+  background: linear-gradient(90deg, #F3EDE3 25%, #FAF7F2 50%, #F3EDE3 75%);
+  background-size: 200% 100%;
+  animation: luxury-shimmer 1.8s infinite;
+}
+
+/* Subtle Card Hover Shadow */
+.luxury-card-shadow {
+  box-shadow: 0 4px 20px -2px rgba(88, 24, 37, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.luxury-card-shadow:hover {
+  box-shadow: 0 12px 30px -4px rgba(88, 24, 37, 0.09), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+/* Hide scrollbars for carousels while maintaining scrollability */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Print styles for tax invoice */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
 }
