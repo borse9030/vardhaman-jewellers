@@ -31,6 +31,7 @@ import { Product } from '@/types';
 export default function HomePage() {
   const { rates } = useGoldRates();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
 
   useEffect(() => {
@@ -106,7 +107,21 @@ export default function HomePage() {
 
       <main className="flex-1 pb-20 lg:pb-0">
         {/* 1. EDITORIAL HERO CAROUSEL */}
-        <section className="relative w-full h-[460px] sm:h-[580px] md:h-[680px] overflow-hidden bg-[#2B2625]">
+        <section
+          className="relative w-full h-[460px] sm:h-[580px] md:h-[680px] overflow-hidden bg-[#2B2625] select-none"
+          onTouchStart={(e) => setTouchStart(e.targetTouches[0].clientX)}
+          onTouchEnd={(e) => {
+            if (touchStart === null) return;
+            const touchEnd = e.changedTouches[0].clientX;
+            const diff = touchStart - touchEnd;
+            if (diff > 45) {
+              setCurrentSlide((prev) => (prev + 1) % INITIAL_BANNERS.length);
+            } else if (diff < -45) {
+              setCurrentSlide((prev) => (prev - 1 + INITIAL_BANNERS.length) % INITIAL_BANNERS.length);
+            }
+            setTouchStart(null);
+          }}
+        >
           {INITIAL_BANNERS.map((banner, idx) => (
             <div
               key={banner.id}
@@ -137,21 +152,28 @@ export default function HomePage() {
                   {banner.subtitle}
                 </p>
 
-                <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                <div className="mt-4 sm:mt-8 flex flex-row items-center gap-2 sm:gap-3 w-full sm:w-auto max-w-sm sm:max-w-none">
                   <Link
                     href={banner.ctaLink}
-                    className="px-5 sm:px-6 py-3 sm:py-3.5 rounded-full bg-[#581825] hover:bg-[#380B12] text-white text-xs sm:text-sm font-semibold tracking-wide uppercase transition-all shadow-lg hover:shadow-2xl border border-[#C5A880]/40 flex items-center justify-center gap-2"
+                    className="flex-1 sm:flex-initial px-3 sm:px-6 py-2 sm:py-3.5 rounded-full bg-[#581825] hover:bg-[#380B12] text-white text-[11px] sm:text-sm font-medium sm:font-semibold tracking-wider uppercase transition-all shadow-md hover:shadow-2xl border border-[#C5A880]/40 flex items-center justify-center gap-1.5 text-center active:scale-95"
                   >
-                    <span>{banner.ctaText}</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <span className="truncate">{banner.ctaText}</span>
+                    <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                   </Link>
 
                   {banner.secondaryCtaText && (
                     <Link
                       href={banner.secondaryCtaLink || '/book-appointment'}
-                      className="px-5 sm:px-6 py-3 sm:py-3.5 rounded-full bg-white/20 hover:bg-white text-white hover:text-[#380B12] text-xs sm:text-sm font-semibold tracking-wide uppercase transition-all backdrop-blur-md border border-white/40 text-center"
+                      className="flex-1 sm:flex-initial px-2.5 sm:px-6 py-2 sm:py-3.5 rounded-full bg-white/20 hover:bg-white text-white hover:text-[#380B12] text-[11px] sm:text-sm font-medium sm:font-semibold tracking-wider uppercase transition-all backdrop-blur-md border border-white/40 text-center flex items-center justify-center active:scale-95"
                     >
-                      {banner.secondaryCtaText}
+                      <span className="truncate">
+                        <span className="sm:hidden">
+                          {banner.secondaryCtaText === 'Book In-Store Viewing' ? 'Book Viewing' : banner.secondaryCtaText}
+                        </span>
+                        <span className="hidden sm:inline">
+                          {banner.secondaryCtaText}
+                        </span>
+                      </span>
                     </Link>
                   )}
                 </div>
@@ -162,17 +184,17 @@ export default function HomePage() {
           {/* Carousel Navigation Arrows */}
           <button
             onClick={() => setCurrentSlide((prev) => (prev - 1 + INITIAL_BANNERS.length) % INITIAL_BANNERS.length)}
-            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-xs"
+            className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white items-center justify-center transition-colors backdrop-blur-xs"
             aria-label="Previous Slide"
           >
-            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+            <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={() => setCurrentSlide((prev) => (prev + 1) % INITIAL_BANNERS.length)}
-            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors backdrop-blur-xs"
+            className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/40 hover:bg-black/70 text-white items-center justify-center transition-colors backdrop-blur-xs"
             aria-label="Next Slide"
           >
-            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+            <ChevronRight className="w-6 h-6" />
           </button>
 
           {/* Dots Indicator */}
@@ -290,18 +312,18 @@ export default function HomePage() {
                 <p className="text-xs sm:text-sm text-[#F4EDE4] leading-relaxed max-w-lg">
                   From traditional twin-cup Wati Mangalsutras and hand-embossed Patlya bangles to majestic Kolhapuri Saaj and Nakshi temple chokers, each creation honors your most cherished sacred promises.
                 </p>
-                <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row gap-2.5 sm:gap-4">
+                <div className="pt-2 sm:pt-4 flex flex-row items-center gap-2 sm:gap-4 w-full sm:w-auto">
                   <Link
                     href="/wedding"
-                    className="px-5 sm:px-6 py-3 rounded-full bg-[#C5A880] text-[#380B12] text-xs font-bold uppercase tracking-wider hover:bg-white transition-colors text-center"
+                    className="flex-1 sm:flex-initial px-3 sm:px-6 py-2.5 sm:py-3 rounded-full bg-[#C5A880] text-[#380B12] text-[11px] sm:text-xs font-bold uppercase tracking-wider hover:bg-white transition-colors text-center truncate active:scale-95"
                   >
-                    View Bridal Collection
+                    Bridal Collection
                   </Link>
                   <Link
                     href="/book-appointment"
-                    className="px-5 sm:px-6 py-3 rounded-full border border-white/40 text-white text-xs font-bold uppercase tracking-wider hover:bg-white/10 transition-colors text-center"
+                    className="flex-1 sm:flex-initial px-3 sm:px-6 py-2.5 sm:py-3 rounded-full border border-white/40 text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider hover:bg-white/10 transition-colors text-center truncate active:scale-95"
                   >
-                    Book Bridal Lounge
+                    Book Lounge
                   </Link>
                 </div>
               </div>
