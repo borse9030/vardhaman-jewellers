@@ -2,9 +2,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { MessageSquare, X, Send, Sparkles, MessageCircle, Phone, ArrowUpRight } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useGoldRates } from '@/context/GoldRateContext';
+import { useCart } from '@/context/CartContext';
 
 interface Message {
   id: string;
@@ -15,8 +17,10 @@ interface Message {
 }
 
 export default function FloatingConcierge() {
+  const pathname = usePathname();
   const { language, setLanguage, t } = useLanguage();
-  const { rates } = useGoldRates();
+  const { rates, isLiveModalOpen } = useGoldRates();
+  const { isCartDrawerOpen } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -89,8 +93,12 @@ export default function FloatingConcierge() {
     }
   };
 
+  if (isCartDrawerOpen || isLiveModalOpen || pathname?.startsWith('/admin') || pathname === '/login') {
+    return null;
+  }
+
   return (
-    <div className="fixed bottom-16 sm:bottom-6 right-3 sm:right-6 z-50 select-none">
+    <div className="fixed bottom-20 sm:bottom-6 right-3 sm:right-6 z-40 select-none">
       {/* Floating Trigger Button */}
       {!isOpen && (
         <button

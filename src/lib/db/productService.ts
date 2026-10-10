@@ -70,6 +70,12 @@ export async function getAllProducts(): Promise<Product[]> {
         snapshot.forEach((docSnap) => {
           list.push({ id: docSnap.id, ...(docSnap.data() as Omit<Product, 'id'>) });
         });
+        // Merge with any initial products not yet in Firestore
+        INITIAL_PRODUCTS.forEach((initP) => {
+          if (!list.some((p) => p.id === initP.id || p.slug === initP.slug)) {
+            list.push(initP);
+          }
+        });
         saveLocalProducts(list);
         return list;
       }
@@ -88,7 +94,7 @@ export async function getFilteredProducts(params: ProductFilterParams): Promise<
 }> {
   const all = await getAllProducts();
 
-  let filtered = all.filter((p) => {
+  const filtered = all.filter((p) => {
     // Category match
     if (params.category && params.category !== 'all' && params.category !== 'All Jewellery') {
       const catNorm = params.category.toLowerCase().replace(/-/g, ' ');
@@ -196,9 +202,17 @@ export async function getFilteredProducts(params: ProductFilterParams): Promise<
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const normSlug = decodeURIComponent(slug).toLowerCase().trim();
   const all = await getAllProducts();
-  const found = all.find((p) => p.slug === slug || p.id === slug);
-  return found || null;
+  const found = all.find(
+    (p) => p.slug.toLowerCase() === normSlug || p.id.toLowerCase() === normSlug
+  );
+  if (found) return found;
+  return (
+    INITIAL_PRODUCTS.find(
+      (p) => p.slug.toLowerCase() === normSlug || p.id.toLowerCase() === normSlug
+    ) || null
+  );
 }
 
 export async function getProductById(id: string): Promise<Product | null> {

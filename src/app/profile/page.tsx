@@ -17,13 +17,10 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/context/AuthContext';
 
-export default function ProfilePage() {
-  const { customer, loginCustomer, logoutCustomer } = useAuth();
+import OtpLoginForm from '@/components/auth/OtpLoginForm';
 
-  // Login form state if not signed in
-  const [emailInput, setEmailInput] = useState('');
-  const [nameInput, setNameInput] = useState('');
-  const [phoneInput, setPhoneInput] = useState('');
+export default function ProfilePage() {
+  const { customer, logoutCustomer } = useAuth();
 
   // Address state
   const [addresses, setAddresses] = useState([
@@ -44,12 +41,7 @@ export default function ProfilePage() {
   const [newCity, setNewCity] = useState('');
   const [newPin, setNewPin] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (emailInput.trim()) {
-      loginCustomer(emailInput, nameInput || 'Valued Patron', phoneInput);
-    }
-  };
+
 
   const handleAddAddress = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,60 +72,8 @@ export default function ProfilePage() {
 
       <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-8 py-10 sm:py-16">
         {!customer ? (
-          <div className="max-w-md mx-auto bg-white p-8 rounded-2xl border border-[#E8E2D8] shadow-sm">
-            <div className="w-12 h-12 rounded-full bg-[#FAF7F2] border border-[#C5A880] flex items-center justify-center mx-auto mb-4">
-              <User className="w-6 h-6 text-[#581825]" />
-            </div>
-            <h1 className="font-serif text-2xl font-bold text-center text-[#1A1818]">
-              Customer Account
-            </h1>
-            <p className="text-xs text-[#78716C] text-center mt-1 mb-6">
-              Sign in with your email or mobile to view saved addresses and order history.
-            </p>
-
-            <form onSubmit={handleLogin} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-[#2B2625] mb-1">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  placeholder="e.g. Radhika Deshmukh"
-                  className="w-full bg-[#FAF7F2] p-2.5 rounded-xl border border-[#E8E2D8] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#2B2625] mb-1">Email Address *</label>
-                <input
-                  type="email"
-                  required
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  placeholder="radhika@example.com"
-                  className="w-full bg-[#FAF7F2] p-2.5 rounded-xl border border-[#E8E2D8] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-[#2B2625] mb-1">Mobile Number</label>
-                <input
-                  type="tel"
-                  value={phoneInput}
-                  onChange={(e) => setPhoneInput(e.target.value)}
-                  placeholder="+91 98220 00000"
-                  className="w-full bg-[#FAF7F2] p-2.5 rounded-xl border border-[#E8E2D8] focus:outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-[#581825] hover:bg-[#380B12] text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-sm"
-              >
-                Sign In to Account
-              </button>
-            </form>
+          <div className="py-4">
+            <OtpLoginForm redirectAfterLogin="/profile" sourceContext="storefront" />
           </div>
         ) : (
           <div className="space-y-8">

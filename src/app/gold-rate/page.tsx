@@ -20,12 +20,12 @@ import { getGoldRateHistory } from '@/lib/db/goldRateService';
 import { GoldRateHistoryItem } from '@/types';
 
 export default function GoldRatePage() {
-  const { rates } = useGoldRates();
+  const { rates, isUpdatedRecently, setIsLiveModalOpen, simulateRateDelta } = useGoldRates();
   const [history, setHistory] = useState<GoldRateHistoryItem[]>([]);
 
   useEffect(() => {
     getGoldRateHistory().then((data) => setHistory(data));
-  }, []);
+  }, [rates]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF7F2]">
@@ -45,85 +45,187 @@ export default function GoldRatePage() {
           </p>
         </div>
 
+        {/* Interactive Toolbar for Live Rate Calculator & Testing */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-4 rounded-2xl bg-white border border-[#E8E2D8] shadow-xs">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span className="font-bold text-[#380B12]">Real-Time Bullion Sync:</span>
+            <span className="text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              Active • Updated {rates.effectiveTime}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsLiveModalOpen(true)}
+              className="px-4 py-2 rounded-xl bg-[#581825] hover:bg-[#380B12] text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-xs"
+            >
+              <Scale className="w-3.5 h-3.5 text-[#C5A880]" />
+              <span>Open Jewellery Calculator & Rate Changer</span>
+            </button>
+          </div>
+        </div>
+
         {/* Live Rates Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5 mb-8 sm:mb-12">
+        <div className={`grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5 mb-8 sm:mb-12 transition-all duration-500 p-2 rounded-3xl ${
+          isUpdatedRecently ? 'bg-emerald-50/50 ring-2 ring-emerald-400/50 shadow-lg' : ''
+        }`}>
           {/* 22K Gold */}
           <div className="bg-white p-3.5 sm:p-6 rounded-2xl border-2 border-[#581825] shadow-md relative overflow-hidden flex flex-col justify-between">
-            <div>
-              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-[#581825] bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E8E2D8] line-clamp-1">
-                Jewellery Benchmark
-              </span>
-              <h2 className="font-serif text-sm sm:text-lg font-bold text-[#1A1818] mt-2 sm:mt-3">22 Karat (916)</h2>
-              <p className="text-[11px] sm:text-xs text-[#78716C]">BIS Hallmarked</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-[#581825] bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E8E2D8] line-clamp-1">
+                  Jewellery Benchmark
+                </span>
+                <h2 className="font-serif text-sm sm:text-lg font-bold text-[#1A1818] mt-2 sm:mt-3">22 Karat (916)</h2>
+                <p className="text-[11px] sm:text-xs text-[#78716C]">BIS Hallmarked Standard</p>
+              </div>
+              {rates.change22K !== undefined && rates.change22K !== 0 && (
+                <span
+                  className={`flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    rates.change22K > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                  }`}
+                >
+                  {rates.change22K > 0 ? <TrendingUp className="w-3 h-3 mr-0.5" /> : null}
+                  {rates.change22K > 0 ? '+' : ''}₹{rates.change22K}
+                </span>
+              )}
             </div>
             <div>
               <div className="mt-3 pt-2 sm:mt-4 sm:pt-3 border-t border-[#F0ECE4]">
                 <span className="text-xl sm:text-3xl font-bold text-[#581825]">{formatINR(rates.rate22K)}</span>
                 <span className="text-[10px] sm:text-xs text-[#78716C] ml-1">/g</span>
               </div>
-              <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-1 sm:mt-2">
-                10g: <strong>{formatINR(rates.rate22K * 10)}</strong>
-              </p>
+              <div className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-1 sm:mt-2 space-y-0.5">
+                <div className="flex justify-between">
+                  <span>8g (1 Pavan):</span>
+                  <strong className="text-[#1A1818]">{formatINR(rates.rate22K * 8)}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>10g:</span>
+                  <strong className="text-[#1A1818]">{formatINR(rates.rate22K * 10)}</strong>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* 24K Gold */}
           <div className="bg-white p-3.5 sm:p-6 rounded-2xl border border-[#E8E2D8] shadow-xs flex flex-col justify-between">
-            <div>
-              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-[#9A7B4F] bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E8E2D8] line-clamp-1">
-                99.9% Pure Bullion
-              </span>
-              <h2 className="font-serif text-sm sm:text-lg font-bold text-[#1A1818] mt-2 sm:mt-3">24 Karat (999)</h2>
-              <p className="text-[11px] sm:text-xs text-[#78716C]">Investment Bars</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-[#9A7B4F] bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E8E2D8] line-clamp-1">
+                  99.9% Pure Bullion
+                </span>
+                <h2 className="font-serif text-sm sm:text-lg font-bold text-[#1A1818] mt-2 sm:mt-3">24 Karat (999)</h2>
+                <p className="text-[11px] sm:text-xs text-[#78716C]">Investment Coins & Bars</p>
+              </div>
+              {rates.change24K !== undefined && rates.change24K !== 0 && (
+                <span
+                  className={`flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    rates.change24K > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                  }`}
+                >
+                  {rates.change24K > 0 ? <TrendingUp className="w-3 h-3 mr-0.5" /> : null}
+                  {rates.change24K > 0 ? '+' : ''}₹{rates.change24K}
+                </span>
+              )}
             </div>
             <div>
               <div className="mt-3 pt-2 sm:mt-4 sm:pt-3 border-t border-[#F0ECE4]">
                 <span className="text-xl sm:text-3xl font-bold text-[#1A1818]">{formatINR(rates.rate24K)}</span>
                 <span className="text-[10px] sm:text-xs text-[#78716C] ml-1">/g</span>
               </div>
-              <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-1 sm:mt-2">
-                10g: <strong>{formatINR(rates.rate24K * 10)}</strong>
-              </p>
+              <div className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-1 sm:mt-2 space-y-0.5">
+                <div className="flex justify-between">
+                  <span>8g:</span>
+                  <strong className="text-[#1A1818]">{formatINR(rates.rate24K * 8)}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>10g:</span>
+                  <strong className="text-[#1A1818]">{formatINR(rates.rate24K * 10)}</strong>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* 18K Gold */}
           <div className="bg-white p-3.5 sm:p-6 rounded-2xl border border-[#E8E2D8] shadow-xs flex flex-col justify-between">
-            <div>
-              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-[#78716C] bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E8E2D8] line-clamp-1">
-                Diamond Grade
-              </span>
-              <h2 className="font-serif text-sm sm:text-lg font-bold text-[#1A1818] mt-2 sm:mt-3">18 Karat (750)</h2>
-              <p className="text-[11px] sm:text-xs text-[#78716C]">Solitaires</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-[#78716C] bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E8E2D8] line-clamp-1">
+                  Diamond Grade
+                </span>
+                <h2 className="font-serif text-sm sm:text-lg font-bold text-[#1A1818] mt-2 sm:mt-3">18 Karat (750)</h2>
+                <p className="text-[11px] sm:text-xs text-[#78716C]">Solitaires & Modern</p>
+              </div>
+              {rates.change18K !== undefined && rates.change18K !== 0 && (
+                <span
+                  className={`flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    rates.change18K > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                  }`}
+                >
+                  {rates.change18K > 0 ? <TrendingUp className="w-3 h-3 mr-0.5" /> : null}
+                  {rates.change18K > 0 ? '+' : ''}₹{rates.change18K}
+                </span>
+              )}
             </div>
             <div>
               <div className="mt-3 pt-2 sm:mt-4 sm:pt-3 border-t border-[#F0ECE4]">
                 <span className="text-xl sm:text-3xl font-bold text-[#1A1818]">{formatINR(rates.rate18K)}</span>
                 <span className="text-[10px] sm:text-xs text-[#78716C] ml-1">/g</span>
               </div>
-              <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-1 sm:mt-2">
-                10g: <strong>{formatINR(rates.rate18K * 10)}</strong>
-              </p>
+              <div className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-1 sm:mt-2 space-y-0.5">
+                <div className="flex justify-between">
+                  <span>10g:</span>
+                  <strong className="text-[#1A1818]">{formatINR(rates.rate18K * 10)}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>14K (585) rate:</span>
+                  <strong className="text-[#1A1818]">{formatINR(rates.rate14K || Math.round((rates.rate24K * 14) / 24))}/g</strong>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Silver */}
           <div className="bg-white p-3.5 sm:p-6 rounded-2xl border border-[#E8E2D8] shadow-xs flex flex-col justify-between">
-            <div>
-              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-[#78716C] bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E8E2D8] line-clamp-1">
-                92.5 Sterling
-              </span>
-              <h2 className="font-serif text-sm sm:text-lg font-bold text-[#1A1818] mt-2 sm:mt-3">Pure Silver</h2>
-              <p className="text-[11px] sm:text-xs text-[#78716C]">Pooja Articles</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-[#78716C] bg-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E8E2D8] line-clamp-1">
+                  92.5 Sterling
+                </span>
+                <h2 className="font-serif text-sm sm:text-lg font-bold text-[#1A1818] mt-2 sm:mt-3">Pure Silver</h2>
+                <p className="text-[11px] sm:text-xs text-[#78716C]">Pooja Articles & Gifts</p>
+              </div>
+              {rates.changeSilver !== undefined && rates.changeSilver !== 0 && (
+                <span
+                  className={`flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    rates.changeSilver > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                  }`}
+                >
+                  {rates.changeSilver > 0 ? <TrendingUp className="w-3 h-3 mr-0.5" /> : null}
+                  {rates.changeSilver > 0 ? '+' : ''}₹{rates.changeSilver}
+                </span>
+              )}
             </div>
             <div>
               <div className="mt-3 pt-2 sm:mt-4 sm:pt-3 border-t border-[#F0ECE4]">
                 <span className="text-xl sm:text-3xl font-bold text-[#1A1818]">{formatINR(rates.rateSilver)}</span>
                 <span className="text-[10px] sm:text-xs text-[#78716C] ml-1">/g</span>
               </div>
-              <p className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-1 sm:mt-2">
-                1kg: <strong>{formatINR(rates.rateSilver * 1000)}</strong>
-              </p>
+              <div className="text-[10px] sm:text-[11px] text-[#A8A29E] mt-1 sm:mt-2 space-y-0.5">
+                <div className="flex justify-between">
+                  <span>10g:</span>
+                  <strong className="text-[#1A1818]">{formatINR(rates.rateSilver * 10)}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>1kg:</span>
+                  <strong className="text-[#581825]">{formatINR(rates.rateSilver * 1000)}</strong>
+                </div>
+              </div>
             </div>
           </div>
         </div>

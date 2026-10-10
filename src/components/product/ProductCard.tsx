@@ -8,7 +8,7 @@ import { Product } from '@/types';
 import { useGoldRates } from '@/context/GoldRateContext';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { calculateProductPrice, formatINR } from '@/services/pricingEngine';
+import { calculateProductPrice, formatINR, isSilverProduct } from '@/services/pricingEngine';
 import QuickViewModal from './QuickViewModal';
 
 interface ProductCardProps {
@@ -16,7 +16,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { rates } = useGoldRates();
+  const { rates, isUpdatedRecently } = useGoldRates();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -141,7 +141,13 @@ Please share more details with me.`;
 
             {/* Price Display */}
             <div className="mt-1 sm:mt-2 flex flex-wrap items-baseline gap-1 sm:gap-2">
-              <span className="text-sm sm:text-base font-bold text-[#581825]">
+              <span
+                className={`text-sm sm:text-base font-bold transition-all duration-300 rounded ${
+                  isUpdatedRecently
+                    ? 'text-emerald-700 bg-emerald-100/80 px-1.5 py-0.5 ring-1 ring-emerald-400 scale-105'
+                    : 'text-[#581825]'
+                }`}
+              >
                 {formatINR(priceBreakdown.finalPrice)}
               </span>
               {product.compareAtPrice && product.compareAtPrice > priceBreakdown.finalPrice && (
@@ -153,8 +159,11 @@ Please share more details with me.`;
 
             {/* Dynamic Gold Rate Reference Tag */}
             {product.isDynamicPricing && (
-              <p className="text-[9px] sm:text-[10px] text-[#9A7B4F] mt-0.5 truncate">
-                Dynamic based on live {product.purity}
+              <p className="text-[9px] sm:text-[10px] text-[#9A7B4F] mt-0.5 truncate flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shrink-0"></span>
+                <span>
+                  Live rate: {formatINR(priceBreakdown.goldRateApplied)}/g ({isSilverProduct(product) ? '925 Silver' : product.purity})
+                </span>
               </p>
             )}
           </div>

@@ -18,6 +18,17 @@ export const DEFAULT_GOLD_RATES: GoldRates = {
 };
 
 /**
+ * Checks if a product is a silver item based on metalType, category, goldRateReference, or purity
+ */
+export function isSilverProduct(product: Product): boolean {
+  if (product.goldRateReference === 'Silver') return true;
+  if (product.jewelleryType === 'Silver' || product.category === 'Silver') return true;
+  if (product.metalType?.toLowerCase().includes('silver')) return true;
+  if (product.purity?.toLowerCase().includes('silver')) return true;
+  return false;
+}
+
+/**
  * Returns the effective rate per gram for a given gold/silver purity
  */
 export function getRateForPurity(purity: string, rates: GoldRates = DEFAULT_GOLD_RATES): number {
@@ -30,17 +41,32 @@ export function getRateForPurity(purity: string, rates: GoldRates = DEFAULT_GOLD
       return rates.rate18K;
     case '14K':
       // 14K is 58.33% pure gold, calculated proportional to 24K
-      return Math.round((rates.rate24K * 14) / 24);
+      return rates.rate14K || Math.round((rates.rate24K * 14) / 24);
     case '925 Silver':
     case 'Silver':
+    case 'Sterling Silver':
       return rates.rateSilver;
     default:
+      if (purity && (purity.toLowerCase().includes('silver') || purity.includes('925'))) {
+        return rates.rateSilver;
+      }
       return rates.rate22K;
   }
 }
 
 /**
- * Centralized Gold Pricing Calculator
+ * Returns the effective metal rate applied to a product (gold or silver)
+ */
+export function getEffectiveMetalRate(product: Product, rates: GoldRates = DEFAULT_GOLD_RATES): number {
+  if (isSilverProduct(product)) {
+    return rates.rateSilver;
+  }
+  const ref = product.goldRateReference || product.purity;
+  return getRateForPurity(ref, rates);
+}
+
+/**
+ * Centralized Gold & Silver Pricing Calculator
  * Computes exact itemized price breakdown according to Indian jewellery standards
  */
 export function calculateProductPrice(
@@ -48,6 +74,8 @@ export function calculateProductPrice(
   rates: GoldRates = DEFAULT_GOLD_RATES,
   gstRateOverride?: number
 ): PriceBreakdown {
+  const metalRate = getEffectiveMetalRate(product, rates);
+
   // If product is set to fixed selling price and not dynamic pricing
   if (!product.isDynamicPricing && product.finalPrice > 0) {
     const fixedGstPercent = gstRateOverride ?? product.GST ?? 3;
@@ -55,7 +83,7 @@ export function calculateProductPrice(
     const gstAmt = product.finalPrice - baseBeforeTax;
     return {
       netGoldWeight: product.netGoldWeight,
-      goldRateApplied: getRateForPurity(product.purity, rates),
+      goldRateApplied: metalRate,
       goldValue: baseBeforeTax,
       makingCharges: 0,
       wastagePercentage: 0,
@@ -70,48 +98,45 @@ export function calculateProductPrice(
     };
   }
 
-  // 1. Identify applicable gold rate based on purity
-  const goldRate = getRateForPurity(product.purity, rates);
-
-  // 2. Gold Value = Net Gold Weight × Applicable Gold Rate
+  // 1. Metal Value = Net Metal Weight × Applicable Metal Rate
   const netWeight = Math.max(0, product.netGoldWeight || product.grossWeight || 0);
-  const goldValue = Math.round(netWeight * goldRate);
+  const metalValue = Math.round(netWeight * metalRate);
 
-  // 3. Making Charges calculation
+  // 2. Making Charges calculation
   let makingCharges = 0;
   if (product.makingChargeType === 'perGram') {
     makingCharges = Math.round((product.makingCharge || 0) * (product.grossWeight || netWeight));
   } else if (product.makingChargeType === 'percentage') {
-    makingCharges = Math.round((goldValue * (product.makingCharge || 0)) / 100);
+    makingCharges = Math.round((metalValue * (product.makingCharge || 0)) / 100);
   } else {
     // Fixed amount
     makingCharges = Math.round(product.makingCharge || 0);
   }
 
-  // 4. Wastage = Net Gold Value × Wastage %
+  // 3. Wastage = Net Metal Value × Wastage %
   const wastagePercentage = product.wastagePercentage || 0;
-  const wastageAmount = Math.round((goldValue * wastagePercentage) / 100);
+  const wastageAmount = Math.round((metalValue * wastagePercentage) / 100);
 
-  // 5. Stone Charges
+  // 4. Stone Charges
   const stoneCharges = Math.round(product.stonePrice || 0);
 
-  // 6. Subtotal = Gold Value + Making Charges + Wastage + Stone Charges
-  const subtotal = goldValue + makingCharges + wastageAmount + stoneCharges;
+  // 5. Subtotal = Metal Value + Making Charges + Wastage + Stone Charges
+  const subtotal = metalValue + makingCharges + wastageAmount + stoneCharges;
 
-  // 7. GST = Applicable GST % (Standard 3% for jewellery in India)
+  // 6. GST = Applicable GST % (Standard 3% for jewellery in India)
   const gstPercent = gstRateOverride ?? product.GST ?? 3;
   const gstAmount = Math.round((subtotal * gstPercent) / 100);
 
-  // 8. Discount
+  // 7. Discount
   const discountAmount = Math.round(product.discount || 0);
 
-  // 9. Final Price = Subtotal + GST - Discount
+  // 8. Final Price = Subtotal + GST - Discount
   const finalPrice = Math.max(0, subtotal + gstAmount - discountAmount);
 
   return {
     netGoldWeight: netWeight,
-    goldRateApplied: goldRate,
-    goldValue,
+    goldRateApplied: metalRate,
+    goldValue: metalValue,
     makingCharges,
     wastagePercentage,
     wastageAmount,

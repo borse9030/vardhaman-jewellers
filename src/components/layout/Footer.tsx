@@ -149,7 +149,6 @@ export default function Footer() {
               <li><Link href="/returns" className="hover:text-white transition-colors">Return & Buyback Policy</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-              <li><Link href="/admin" className="hover:text-[#C5A880] transition-colors text-white font-medium">Admin Portal</Link></li>
             </ul>
 
             {/* Newsletter */}

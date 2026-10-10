@@ -55,7 +55,7 @@ export default function CartDrawer() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-[70] flex justify-end">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
@@ -183,7 +183,7 @@ export default function CartDrawer() {
 
         {/* Footer & Checkout Summary */}
         {items.length > 0 && (
-          <div className="p-4 sm:p-5 border-t border-[#E8E2D8] bg-[#FAF7F2] space-y-3">
+          <div className="p-4 sm:p-5 pb-6 sm:pb-5 border-t border-[#E8E2D8] bg-[#FAF7F2] space-y-3">
             {/* Promo Code Input */}
             <div>
               {appliedCoupon ? (

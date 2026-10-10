@@ -19,6 +19,9 @@ import {
   ShieldCheck,
   Home,
   LayoutGrid,
+  LogIn,
+  LogOut,
+  Calendar,
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useGoldRates } from '@/context/GoldRateContext';
@@ -31,10 +34,10 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { language, setLanguage, t } = useLanguage();
-  const { rates } = useGoldRates();
+  const { rates, setIsLiveModalOpen, isUpdatedRecently } = useGoldRates();
   const { itemCount, setIsCartDrawerOpen } = useCart();
   const { count: wishlistCount } = useWishlist();
-  const { customer, adminUser, isAdminLoggedIn } = useAuth();
+  const { customer, adminUser, isAdminLoggedIn, logoutCustomer, logoutAdmin } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -82,29 +85,57 @@ export default function Header() {
       <div className="bg-[#380B12] text-[#FAF7F2] text-xs py-1.5 px-3 sm:px-8 border-b border-[#581825]/40 overflow-hidden w-full">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
           {/* Live Bullion Ticker */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 text-[11px] sm:text-xs">
+          <button
+            onClick={() => setIsLiveModalOpen(true)}
+            className={`flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 text-[11px] sm:text-xs rounded-lg px-2 transition-all cursor-pointer text-left ${
+              isUpdatedRecently
+                ? 'bg-emerald-900/60 ring-1 ring-emerald-400 text-emerald-100 animate-pulse'
+                : 'hover:bg-white/10'
+            }`}
+            title="Click to view full Live Rates breakdown, Calculator & Test Changer"
+            aria-label="Open Live Bullion Rates"
+          >
             <span className="flex items-center gap-1.5 font-medium text-[#DFCDAE] whitespace-nowrap">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="hidden sm:inline">{t('rateUpdatedToday')} {rates.effectiveTime}:</span>
-              <span className="sm:hidden font-bold">22K Today:</span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="hidden sm:inline font-semibold">Live Bullion ({rates.effectiveTime}):</span>
+              <span className="sm:hidden font-bold">Live:</span>
             </span>
-            <div className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs whitespace-nowrap">
-              <span className="text-[#FAF7F2]/90">
+            <div className="flex items-center gap-2 sm:gap-2.5 text-[11px] sm:text-xs whitespace-nowrap">
+              <span className="text-[#FAF7F2]/90 flex items-center gap-1">
+                <span className="text-[#DFCDAE]/70">22K:</span>
                 <strong className="text-white font-semibold">{formatINR(rates.rate22K)}</strong>
                 <span className="text-[10px] text-[#DFCDAE]/80">/g</span>
+                {rates.change22K !== undefined && rates.change22K !== 0 && (
+                  <span className={`text-[9px] font-bold px-1 py-0.2 rounded ${rates.change22K > 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}`}>
+                    {rates.change22K > 0 ? '▲' : '▼'}{Math.abs(rates.change22K)}
+                  </span>
+                )}
               </span>
               <span className="text-[#FAF7F2]/40 hidden sm:inline">|</span>
-              <span className="text-[#FAF7F2]/90 hidden sm:inline">
-                24K: <strong className="text-white font-semibold">{formatINR(rates.rate24K)}</strong>
+              <span className="text-[#FAF7F2]/90 hidden md:inline-flex items-center gap-1">
+                <span className="text-[#DFCDAE]/70">24K:</span>
+                <strong className="text-white font-semibold">{formatINR(rates.rate24K)}</strong>
                 <span className="text-[10px] text-[#DFCDAE]/80">/g</span>
               </span>
-              <span className="text-[#FAF7F2]/40 hidden sm:inline">|</span>
-              <span className="text-[#FAF7F2]/90 hidden sm:inline">
-                Silver: <strong className="text-white font-semibold">{formatINR(rates.rateSilver)}</strong>
+              <span className="text-[#FAF7F2]/40 hidden md:inline">|</span>
+              <span className="text-[#FAF7F2]/90 hidden sm:inline-flex items-center gap-1">
+                <span className="text-[#DFCDAE]/70">Silver:</span>
+                <strong className="text-white font-semibold">{formatINR(rates.rateSilver)}</strong>
                 <span className="text-[10px] text-[#DFCDAE]/80">/g</span>
+                {rates.changeSilver !== undefined && rates.changeSilver !== 0 && (
+                  <span className={`text-[9px] font-bold px-1 py-0.2 rounded ${rates.changeSilver > 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}`}>
+                    {rates.changeSilver > 0 ? '▲' : '▼'}{Math.abs(rates.changeSilver)}
+                  </span>
+                )}
+              </span>
+              <span className="text-[9px] uppercase font-bold text-[#DFCDAE] bg-[#581825] px-1.5 py-0.5 rounded border border-[#C5A880]/30 hidden lg:inline">
+                Calc & Rates ↗
               </span>
             </div>
-          </div>
+          </button>
 
           {/* Right utility: WhatsApp help & Language switch */}
           <div className="flex items-center gap-3 whitespace-nowrap shrink-0">
@@ -254,11 +285,11 @@ export default function Header() {
               )}
             </button>
 
-            {/* Account / Admin Menu */}
+            {/* Account Menu */}
             <div className="relative">
               <button
                 onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                className="flex items-center gap-1 p-2 text-[#581825] hover:bg-[#F3EDE3] rounded-full transition-colors"
+                className="flex items-center gap-1 p-2 text-[#581825] hover:bg-[#F3EDE3] rounded-full transition-colors cursor-pointer"
                 title={t('account')}
               >
                 <User className="w-5 h-5" />
@@ -268,54 +299,81 @@ export default function Header() {
               {/* Dropdown Menu */}
               {isAccountMenuOpen && (
                 <div
-                  className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-[#E8E2D8] py-2 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#E8E2D8] py-2 z-50 animate-in fade-in zoom-in-95 duration-150 overflow-hidden"
                   onMouseLeave={() => setIsAccountMenuOpen(false)}
                 >
-                  {customer ? (
-                    <div className="px-4 py-2 border-b border-[#F0ECE4]">
-                      <p className="text-xs text-[#78716C]">Signed in as</p>
-                      <p className="text-sm font-semibold text-[#1A1818] truncate">{customer.name}</p>
-                      <p className="text-xs text-[#9A7B4F] truncate">{customer.email}</p>
-                    </div>
+                  {customer || adminUser ? (
+                    <>
+                      <div className="px-4 py-3 border-b border-[#F0ECE4] bg-[#FAF7F2]">
+                        <p className="text-[11px] text-[#78716C]">Signed in as</p>
+                        <p className="text-sm font-bold text-[#1A1818] truncate">
+                          {customer?.name || adminUser?.name || 'Valued Patron'}
+                        </p>
+                        <p className="text-xs text-[#9A7B4F] truncate font-medium">
+                          {customer?.phone || customer?.email || adminUser?.email}
+                        </p>
+                      </div>
+
+                      <div className="py-1.5">
+                        <Link
+                          href="/profile"
+                          onClick={() => setIsAccountMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#2B2625] hover:bg-[#FAF7F2] hover:text-[#581825] transition-colors"
+                        >
+                          <User className="w-4 h-4 text-[#C5A880] shrink-0" />
+                          <span>My Profile & Saved Addresses</span>
+                        </Link>
+                        <Link
+                          href="/orders"
+                          onClick={() => setIsAccountMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#2B2625] hover:bg-[#FAF7F2] hover:text-[#581825] transition-colors"
+                        >
+                          <ShoppingBag className="w-4 h-4 text-[#C5A880] shrink-0" />
+                          <span>Track Orders & Invoices</span>
+                        </Link>
+                        <Link
+                          href="/book-appointment"
+                          onClick={() => setIsAccountMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#2B2625] hover:bg-[#FAF7F2] hover:text-[#581825] transition-colors"
+                        >
+                          <Calendar className="w-4 h-4 text-[#C5A880] shrink-0" />
+                          <span>My Store Appointments</span>
+                        </Link>
+                      </div>
+
+                      <div className="border-t border-[#F0ECE4] pt-1">
+                        <button
+                          onClick={() => {
+                            logoutCustomer();
+                            logoutAdmin();
+                            setIsAccountMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition-colors text-left cursor-pointer"
+                        >
+                          <LogOut className="w-4 h-4 shrink-0" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </>
                   ) : (
-                    <div className="px-4 py-2 border-b border-[#F0ECE4]">
-                      <p className="text-sm font-semibold text-[#380B12]">Welcome to Vardhaman</p>
-                      <p className="text-xs text-[#78716C]">Maharashtra’s Heirloom Jeweller</p>
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <p className="font-serif text-sm font-bold text-[#1A1818]">Welcome to Vardhaman</p>
+                        <p className="text-[11px] text-[#78716C] mt-1 leading-relaxed">
+                          Sign in to view your profile, saved addresses, orders & wishlist.
+                        </p>
+                      </div>
+
+                      <Link
+                        href="/login"
+                        onClick={() => setIsAccountMenuOpen(false)}
+                        className="w-full py-2.5 px-3 rounded-xl bg-[#581825] hover:bg-[#380B12] text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <LogIn className="w-3.5 h-3.5 text-[#C5A880]" />
+                        <span>Sign In with OTP</span>
+                      </Link>
                     </div>
                   )}
-
-                  <Link
-                    href="/profile"
-                    onClick={() => setIsAccountMenuOpen(false)}
-                    className="block px-4 py-2 text-xs text-[#2B2625] hover:bg-[#FAF7F2] hover:text-[#581825]"
-                  >
-                    My Profile & Saved Addresses
-                  </Link>
-                  <Link
-                    href="/orders"
-                    onClick={() => setIsAccountMenuOpen(false)}
-                    className="block px-4 py-2 text-xs text-[#2B2625] hover:bg-[#FAF7F2] hover:text-[#581825]"
-                  >
-                    Track Orders & Invoices
-                  </Link>
-                  <Link
-                    href="/book-appointment"
-                    onClick={() => setIsAccountMenuOpen(false)}
-                    className="block px-4 py-2 text-xs text-[#2B2625] hover:bg-[#FAF7F2] hover:text-[#581825]"
-                  >
-                    My Store Appointments
-                  </Link>
-
-                  <div className="border-t border-[#F0ECE4] my-1"></div>
-
-                  <Link
-                    href="/admin"
-                    onClick={() => setIsAccountMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-[#581825] hover:bg-[#F6EBEF]"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#581825]" />
-                    {isAdminLoggedIn ? 'Admin Dashboard (Active)' : 'Admin Portal Login'}
-                  </Link>
                 </div>
               )}
             </div>
@@ -433,6 +491,36 @@ export default function Header() {
               ))}
 
               <div className="p-4 space-y-2 text-xs">
+                {customer || adminUser ? (
+                  <>
+                    <Link
+                      href="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-2 p-2 rounded text-[#581825] font-medium hover:bg-white"
+                    >
+                      <User className="w-4 h-4 text-[#C5A880]" />
+                      <span>My Profile & Saved Addresses</span>
+                    </Link>
+                    <Link
+                      href="/orders"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-2 p-2 rounded text-[#581825] font-medium hover:bg-white"
+                    >
+                      <ShoppingBag className="w-4 h-4 text-[#C5A880]" />
+                      <span>Track Orders & Invoices</span>
+                    </Link>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-[#581825] text-white font-bold text-xs shadow-xs mb-2"
+                  >
+                    <LogIn className="w-4 h-4 text-[#C5A880]" />
+                    <span>Sign In with Mobile OTP</span>
+                  </Link>
+                )}
+
                 <Link
                   href="/stores"
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -449,14 +537,20 @@ export default function Header() {
                   <Sparkles className="w-4 h-4 text-[#C5A880]" />
                   <span>{t('bookAppointment')}</span>
                 </Link>
-                <Link
-                  href="/admin"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-2 p-2 rounded text-[#581825] font-medium hover:bg-white"
-                >
-                  <ShieldCheck className="w-4 h-4 text-[#581825]" />
-                  <span>{t('adminPortal')}</span>
-                </Link>
+
+                {(customer || adminUser) && (
+                  <button
+                    onClick={() => {
+                      logoutCustomer();
+                      logoutAdmin();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 p-2 rounded text-rose-700 font-medium hover:bg-rose-50 text-left cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -522,13 +616,13 @@ export default function Header() {
 
           {/* Account */}
           <Link
-            href="/profile"
+            href={customer || adminUser ? "/profile" : "/login"}
             className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-colors ${
-              pathname === '/profile' ? 'text-[#581825] font-bold' : 'hover:text-[#581825]'
+              pathname === '/profile' || pathname === '/login' ? 'text-[#581825] font-bold' : 'hover:text-[#581825]'
             }`}
           >
             <User className="w-5 h-5" />
-            <span>Account</span>
+            <span>{customer || adminUser ? 'Account' : 'Sign In'}</span>
           </Link>
         </div>
       </nav>

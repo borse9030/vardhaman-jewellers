@@ -23,11 +23,12 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/product/ProductCard';
 import { Product } from '@/types';
+import { INITIAL_PRODUCTS } from '@/data/seedData';
 import { getProductBySlug, getAllProducts } from '@/lib/db/productService';
 import { useGoldRates } from '@/context/GoldRateContext';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { calculateProductPrice, formatINR } from '@/services/pricingEngine';
+import { calculateProductPrice, formatINR, isSilverProduct } from '@/services/pricingEngine';
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -36,11 +37,14 @@ interface ProductPageProps {
 export default function ProductDetailPage({ params }: ProductPageProps) {
   const router = useRouter();
   const { slug } = use(params);
-  const { rates } = useGoldRates();
+  const { rates, isUpdatedRecently, setIsLiveModalOpen } = useGoldRates();
   const { addToCart, setIsCartDrawerOpen } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
-  const [product, setProduct] = useState<Product | null>(null);
+  const [productState, setProductState] = useState<Product | null>(() => {
+    const s = decodeURIComponent(slug).toLowerCase().trim();
+    return INITIAL_PRODUCTS.find((p) => p.slug.toLowerCase() === s || p.id.toLowerCase() === s) || null;
+  });
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -48,9 +52,18 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
   const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
-    getProductBySlug(slug).then((p) => setProduct(p));
+    getProductBySlug(slug).then((p) => setProductState(p));
     getAllProducts().then((list) => setAllProducts(list));
   }, [slug]);
+
+  const product =
+    productState ||
+    INITIAL_PRODUCTS.find(
+      (p) =>
+        p.slug.toLowerCase() === decodeURIComponent(slug).toLowerCase().trim() ||
+        p.id.toLowerCase() === decodeURIComponent(slug).toLowerCase().trim()
+    ) ||
+    null;
 
   if (!product) {
     return (
@@ -124,16 +137,18 @@ Please provide availability and viewing slot details.`;
     <div className="min-h-screen flex flex-col bg-[#FAF7F2]">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-8 py-6 sm:py-12 pb-24 lg:pb-12">
+      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-8 py-4 sm:py-12 pb-28 lg:pb-12">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-1.5 text-xs text-[#78716C] mb-6 sm:mb-8 overflow-x-auto whitespace-nowrap no-scrollbar">
-          <Link href="/" className="hover:text-[#581825]">Home</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-[#A8A29E]" />
-          <Link href="/shop" className="hover:text-[#581825]">Jewellery</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-[#A8A29E]" />
-          <Link href={`/${product.category.toLowerCase()}`} className="hover:text-[#581825]">{product.category}</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-[#A8A29E]" />
-          <span className="text-[#1A1818] font-semibold truncate max-w-xs">{product.name}</span>
+        <nav className="flex items-center gap-1.5 text-xs text-[#78716C] mb-4 sm:mb-8 overflow-x-auto whitespace-nowrap no-scrollbar py-0.5">
+          <Link href="/" className="hover:text-[#581825] shrink-0">Home</Link>
+          <ChevronRight className="w-3.5 h-3.5 text-[#A8A29E] shrink-0" />
+          <Link href="/shop" className="hover:text-[#581825] shrink-0">Jewellery</Link>
+          <ChevronRight className="w-3.5 h-3.5 text-[#A8A29E] shrink-0" />
+          <Link href={`/${product.category.toLowerCase()}`} className="hover:text-[#581825] shrink-0">{product.category}</Link>
+          <ChevronRight className="w-3.5 h-3.5 text-[#A8A29E] shrink-0" />
+          <span className="text-[#1A1818] font-semibold truncate max-w-[130px] sm:max-w-xs shrink-0" title={product.name}>
+            {product.name}
+          </span>
         </nav>
 
         {/* Main PDP Grid (Left Gallery, Right Product Info & Price Breakdown) */}
@@ -198,32 +213,36 @@ Please provide availability and viewing slot details.`;
           {/* RIGHT: Product Details & Live Pricing Engine */}
           <div className="lg:col-span-5 space-y-6">
             <div>
-              <div className="flex items-center justify-between text-xs text-[#78716C] mb-2">
-                <span>SKU: <strong className="text-[#1A1818]">{product.SKU}</strong></span>
-                <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  In Stock & Ready for Dispatch
+              <div className="flex items-center justify-between text-xs text-[#78716C] mb-2 gap-2">
+                <span className="shrink-0">SKU: <strong className="text-[#1A1818]">{product.SKU}</strong></span>
+                <span className="text-emerald-700 font-semibold flex items-center gap-1 shrink-0 text-[11px] sm:text-xs">
+                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                  In Stock & Ready
                 </span>
               </div>
 
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#1A1818] leading-tight">
+              <h1 className="font-serif text-xl sm:text-3xl font-bold text-[#1A1818] leading-tight break-words">
                 {product.name}
               </h1>
 
-              <div className="flex items-center gap-3 mt-2 text-xs text-[#57534E]">
-                <span>{product.purity} Pure Gold</span>
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-2 text-xs text-[#57534E]">
+                <span>{product.purity} Pure {isSilverProduct(product) ? 'Silver' : 'Gold'}</span>
                 <span>•</span>
                 <span>Gross: <strong>{product.grossWeight}g</strong></span>
                 <span>•</span>
-                <span>Net Gold: <strong>{product.netGoldWeight}g</strong></span>
+                <span>Net: <strong>{product.netGoldWeight}g</strong></span>
               </div>
             </div>
 
             {/* Live Pricing Breakdown Card */}
-            <div className="p-5 rounded-2xl bg-white border border-[#E8E2D8] shadow-xs space-y-4">
-              <div className="flex items-baseline justify-between border-b border-[#F0ECE4] pb-3">
+            <div className={`p-4 sm:p-5 rounded-2xl bg-white border border-[#E8E2D8] shadow-xs space-y-3.5 transition-all duration-300 ${
+              isUpdatedRecently ? 'ring-2 ring-emerald-400 bg-emerald-50/20' : ''
+            }`}>
+              <div className="flex items-baseline justify-between border-b border-[#F0ECE4] pb-3 gap-2">
                 <div>
-                  <span className="text-2xl sm:text-3xl font-bold text-[#581825]">
+                  <span className={`text-2xl sm:text-3xl font-bold transition-all ${
+                    isUpdatedRecently ? 'text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded' : 'text-[#581825]'
+                  }`}>
                     {formatINR(priceBreakdown.finalPrice)}
                   </span>
                   <p className="text-[11px] text-[#78716C] mt-0.5">
@@ -231,7 +250,7 @@ Please provide availability and viewing slot details.`;
                   </p>
                 </div>
                 {product.compareAtPrice && product.compareAtPrice > priceBreakdown.finalPrice && (
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <span className="text-xs text-[#A8A29E] line-through block">
                       {formatINR(product.compareAtPrice)}
                     </span>
@@ -244,67 +263,87 @@ Please provide availability and viewing slot details.`;
 
               {/* Centralized Gold Pricing Engine Itemized Breakdown */}
               <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between text-xs font-semibold text-[#1A1818] mb-1">
-                  <span className="flex items-center gap-1">
-                    <Info className="w-3.5 h-3.5 text-[#C5A880]" />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-1 border-b border-[#F5F2EB]">
+                  <span className="flex items-center gap-1 font-semibold text-[#1A1818] text-xs">
+                    <Info className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
                     Transparent Price Breakdown
                   </span>
-                  <span className="text-[10px] text-[#9A7B4F]">IBJA Live Benchmark</span>
+                  <button
+                    onClick={() => setIsLiveModalOpen(true)}
+                    className="text-[10px] text-[#9A7B4F] hover:underline flex items-center gap-1 cursor-pointer font-bold self-start sm:self-auto"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                    <span>Live Benchmark ({formatINR(priceBreakdown.goldRateApplied)}/g) ↗</span>
+                  </button>
                 </div>
 
-                <div className="flex justify-between text-[#78716C]">
-                  <span>Gold Value ({priceBreakdown.netGoldWeight}g @ {formatINR(priceBreakdown.goldRateApplied)}/g):</span>
-                  <span className="font-medium text-[#1A1818]">{formatINR(priceBreakdown.goldValue)}</span>
+                <div className="flex items-center justify-between gap-2 text-[#78716C]">
+                  <span className="text-[11px] sm:text-xs min-w-0">
+                    {isSilverProduct(product) ? 'Silver' : 'Gold'} Value ({priceBreakdown.netGoldWeight}g @ {formatINR(priceBreakdown.goldRateApplied)}/g):
+                  </span>
+                  <span className="font-semibold text-[#1A1818] text-[11px] sm:text-xs shrink-0 text-right">
+                    {formatINR(priceBreakdown.goldValue)}
+                  </span>
                 </div>
 
-                <div className="flex justify-between text-[#78716C]">
-                  <span>Making Charges:</span>
-                  <span className="font-medium text-[#1A1818]">{formatINR(priceBreakdown.makingCharges)}</span>
+                <div className="flex items-center justify-between gap-2 text-[#78716C]">
+                  <span className="text-[11px] sm:text-xs">Making Charges:</span>
+                  <span className="font-semibold text-[#1A1818] text-[11px] sm:text-xs shrink-0 text-right">
+                    {formatINR(priceBreakdown.makingCharges)}
+                  </span>
                 </div>
 
                 {priceBreakdown.wastageAmount > 0 && (
-                  <div className="flex justify-between text-[#78716C]">
-                    <span>Wastage ({priceBreakdown.wastagePercentage}%):</span>
-                    <span className="font-medium text-[#1A1818]">{formatINR(priceBreakdown.wastageAmount)}</span>
+                  <div className="flex items-center justify-between gap-2 text-[#78716C]">
+                    <span className="text-[11px] sm:text-xs">Wastage ({priceBreakdown.wastagePercentage}%):</span>
+                    <span className="font-semibold text-[#1A1818] text-[11px] sm:text-xs shrink-0 text-right">
+                      {formatINR(priceBreakdown.wastageAmount)}
+                    </span>
                   </div>
                 )}
 
                 {priceBreakdown.stoneCharges > 0 && (
-                  <div className="flex justify-between text-[#78716C]">
-                    <span>Gemstone / Diamond Charges:</span>
-                    <span className="font-medium text-[#1A1818]">{formatINR(priceBreakdown.stoneCharges)}</span>
+                  <div className="flex items-center justify-between gap-2 text-[#78716C]">
+                    <span className="text-[11px] sm:text-xs">Gemstone / Diamond Charges:</span>
+                    <span className="font-semibold text-[#1A1818] text-[11px] sm:text-xs shrink-0 text-right">
+                      {formatINR(priceBreakdown.stoneCharges)}
+                    </span>
                   </div>
                 )}
 
-                <div className="flex justify-between text-[#78716C]">
-                  <span>GST ({priceBreakdown.gstPercentage}% Indian Official Standard):</span>
-                  <span className="font-medium text-[#1A1818]">{formatINR(priceBreakdown.gstAmount)}</span>
+                <div className="flex items-center justify-between gap-2 text-[#78716C]">
+                  <span className="text-[11px] sm:text-xs">GST ({priceBreakdown.gstPercentage}% Indian Official Standard):</span>
+                  <span className="font-semibold text-[#1A1818] text-[11px] sm:text-xs shrink-0 text-right">
+                    {formatINR(priceBreakdown.gstAmount)}
+                  </span>
                 </div>
 
                 {priceBreakdown.discountAmount > 0 && (
-                  <div className="flex justify-between text-emerald-700 font-medium">
-                    <span>Special Privilege Discount:</span>
-                    <span>-{formatINR(priceBreakdown.discountAmount)}</span>
+                  <div className="flex items-center justify-between gap-2 text-emerald-700 font-medium">
+                    <span className="text-[11px] sm:text-xs">Special Privilege Discount:</span>
+                    <span className="text-[11px] sm:text-xs shrink-0 text-right">
+                      -{formatINR(priceBreakdown.discountAmount)}
+                    </span>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Quantity Selector & Action Buttons */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-3">
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {/* Quantity */}
-                <div className="flex items-center border border-[#E8E2D8] rounded-xl bg-white">
+                <div className="flex items-center border border-[#E8E2D8] rounded-xl bg-white shrink-0">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3.5 py-2 text-sm font-bold text-[#581825] hover:bg-[#FAF7F2]"
+                    className="px-3 py-2 text-sm font-bold text-[#581825] hover:bg-[#FAF7F2] transition-colors"
                   >
                     -
                   </button>
-                  <span className="px-3 text-xs font-semibold">{quantity}</span>
+                  <span className="px-2.5 text-xs font-semibold">{quantity}</span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="px-3.5 py-2 text-sm font-bold text-[#581825] hover:bg-[#FAF7F2]"
+                    className="px-3 py-2 text-sm font-bold text-[#581825] hover:bg-[#FAF7F2] transition-colors"
                   >
                     +
                   </button>
@@ -313,16 +352,16 @@ Please provide availability and viewing slot details.`;
                 {/* Add to Cart */}
                 <button
                   onClick={() => addToCart(product, quantity)}
-                  className="flex-1 py-3 px-4 rounded-xl bg-[#FAF7F2] hover:bg-[#581825] text-[#581825] hover:text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-[#E8E2D8] hover:border-[#581825] shadow-xs"
+                  className="flex-1 py-3 px-3 sm:px-4 rounded-xl bg-[#FAF7F2] hover:bg-[#581825] text-[#581825] hover:text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-[#E8E2D8] hover:border-[#581825] shadow-xs min-w-0"
                 >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Add to Bag</span>
+                  <ShoppingBag className="w-4 h-4 shrink-0" />
+                  <span className="truncate">Add to Bag</span>
                 </button>
 
                 {/* Wishlist */}
                 <button
                   onClick={() => toggleWishlist(product)}
-                  className="p-3 rounded-xl border border-[#E8E2D8] hover:bg-[#FAF7F2] text-[#581825] transition-colors"
+                  className="p-3 rounded-xl border border-[#E8E2D8] hover:bg-[#FAF7F2] text-[#581825] transition-colors shrink-0"
                   title="Wishlist"
                 >
                   <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-[#581825]' : ''}`} />
@@ -332,51 +371,52 @@ Please provide availability and viewing slot details.`;
               {/* Buy Now Primary CTA */}
               <button
                 onClick={handleBuyNow}
-                className="w-full py-3.5 rounded-xl bg-[#581825] hover:bg-[#380B12] text-white font-bold text-xs uppercase tracking-widest transition-colors shadow-md flex items-center justify-center gap-2"
+                className="w-full py-3.5 px-4 rounded-xl bg-[#581825] hover:bg-[#380B12] text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-2"
               >
-                <span>Buy Now (Instant Insured Checkout)</span>
+                <span className="hidden sm:inline">Buy Now (Instant Insured Checkout)</span>
+                <span className="sm:hidden">Buy Now • Insured Checkout</span>
               </button>
 
               {/* WhatsApp Enquiry & Book Appointment */}
-              <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-1">
+              <div className="grid grid-cols-2 gap-2 pt-1">
                 <a
                   href={whatsappUrl}
                   onClick={handleWhatsAppClick}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-2.5 px-2 sm:px-3 rounded-xl border border-emerald-500 text-emerald-700 hover:bg-emerald-50 text-[11px] sm:text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 text-center"
+                  className="py-2.5 px-2 rounded-xl border border-emerald-500 text-emerald-700 hover:bg-emerald-50 text-[11px] sm:text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 text-center min-w-0"
                 >
-                  <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0" />
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <span className="truncate">WhatsApp Enquiry</span>
                 </a>
 
                 <Link
                   href="/book-appointment"
-                  className="py-2.5 px-2 sm:px-3 rounded-xl border border-[#C5A880] text-[#581825] hover:bg-[#FAF7F2] text-[11px] sm:text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 text-center"
+                  className="py-2.5 px-2 rounded-xl border border-[#C5A880] text-[#581825] hover:bg-[#FAF7F2] text-[11px] sm:text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 text-center min-w-0"
                 >
-                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C5A880] shrink-0" />
+                  <Calendar className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
                   <span className="truncate">Book In-Store</span>
                 </Link>
               </div>
             </div>
 
             {/* Trust Assurances Icons */}
-            <div className="p-4 rounded-xl bg-white border border-[#E8E2D8] grid grid-cols-2 gap-3 text-[11px] text-[#44403C]">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#581825] shrink-0" />
-                <span>BIS 916 Hallmark</span>
+            <div className="p-3 sm:p-4 rounded-xl bg-white border border-[#E8E2D8] grid grid-cols-2 gap-2 sm:gap-3 text-[10px] sm:text-xs text-[#44403C]">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#581825] shrink-0" />
+                <span className="truncate font-medium">BIS 916 Hallmark</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Truck className="w-4 h-4 text-[#581825] shrink-0" />
-                <span>100% Insured Delivery</span>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Truck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#581825] shrink-0" />
+                <span className="truncate font-medium">100% Insured Delivery</span>
               </div>
-              <div className="flex items-center gap-2">
-                <RefreshCw className="w-4 h-4 text-[#581825] shrink-0" />
-                <span>Lifetime Exchange</span>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#581825] shrink-0" />
+                <span className="truncate font-medium">Lifetime Exchange</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Gem className="w-4 h-4 text-[#581825] shrink-0" />
-                <span>Certified Authenticity</span>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Gem className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#581825] shrink-0" />
+                <span className="truncate font-medium">Certified Authentic</span>
               </div>
             </div>
           </div>
@@ -418,27 +458,29 @@ Please provide availability and viewing slot details.`;
 
           <div className="py-6">
             {activeTab === 'specs' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl text-xs">
-                <div className="p-3 bg-white rounded-lg border border-[#E8E2D8] flex justify-between">
-                  <span className="text-[#78716C]">Gold Purity:</span>
-                  <span className="font-semibold text-[#1A1818]">{product.purity} (916 BIS Hallmark)</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-4 max-w-3xl text-xs">
+                <div className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-3 shadow-2xs">
+                  <span className="text-[#78716C] font-medium shrink-0">Metal Purity:</span>
+                  <span className="font-semibold text-[#1A1818] text-right truncate">
+                    {product.purity} (916 BIS Hallmark)
+                  </span>
                 </div>
-                <div className="p-3 bg-white rounded-lg border border-[#E8E2D8] flex justify-between">
-                  <span className="text-[#78716C]">Gross Weight:</span>
-                  <span className="font-semibold text-[#1A1818]">{product.grossWeight} Grams</span>
+                <div className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-3 shadow-2xs">
+                  <span className="text-[#78716C] font-medium shrink-0">Gross Weight:</span>
+                  <span className="font-semibold text-[#1A1818] text-right">{product.grossWeight} Grams</span>
                 </div>
-                <div className="p-3 bg-white rounded-lg border border-[#E8E2D8] flex justify-between">
-                  <span className="text-[#78716C]">Net Gold Weight:</span>
-                  <span className="font-semibold text-[#1A1818]">{product.netGoldWeight} Grams</span>
+                <div className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-3 shadow-2xs">
+                  <span className="text-[#78716C] font-medium shrink-0">Net Metal Weight:</span>
+                  <span className="font-semibold text-[#1A1818] text-right">{product.netGoldWeight} Grams</span>
                 </div>
-                <div className="p-3 bg-white rounded-lg border border-[#E8E2D8] flex justify-between">
-                  <span className="text-[#78716C]">Stone Details:</span>
-                  <span className="font-semibold text-[#1A1818]">{product.stoneType || 'Plain Gold'}</span>
+                <div className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-3 shadow-2xs">
+                  <span className="text-[#78716C] font-medium shrink-0">Stone Details:</span>
+                  <span className="font-semibold text-[#1A1818] text-right truncate">{product.stoneType || 'Plain Gold'}</span>
                 </div>
                 {product.specifications?.map((spec, i) => (
-                  <div key={i} className="p-3 bg-white rounded-lg border border-[#E8E2D8] flex justify-between">
-                    <span className="text-[#78716C]">{spec.key}:</span>
-                    <span className="font-semibold text-[#1A1818]">{spec.value}</span>
+                  <div key={i} className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-3 shadow-2xs">
+                    <span className="text-[#78716C] font-medium shrink-0">{spec.key}:</span>
+                    <span className="font-semibold text-[#1A1818] text-right truncate">{spec.value}</span>
                   </div>
                 ))}
               </div>

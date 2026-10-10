@@ -8,6 +8,8 @@ import { WishlistProvider } from '@/context/WishlistContext';
 import { AuthProvider } from '@/context/AuthContext';
 import CartDrawer from '@/components/cart/CartDrawer';
 import FloatingConcierge from '@/components/chat/FloatingConcierge';
+import LiveRateModal from '@/components/bullion/LiveRateModal';
+import FloatingBullionBar from '@/components/bullion/FloatingBullionBar';
 
 const serifFont = Cormorant_Garamond({
   subsets: ['latin'],
@@ -127,6 +129,8 @@ export default function RootLayout({
                   {children}
                   <CartDrawer />
                   <FloatingConcierge />
+                  <FloatingBullionBar />
+                  <LiveRateModal />
                 </AuthProvider>
               </WishlistProvider>
             </CartProvider>

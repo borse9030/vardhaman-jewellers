@@ -8,7 +8,7 @@ import { Product } from '@/types';
 import { useGoldRates } from '@/context/GoldRateContext';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { calculateProductPrice, formatINR } from '@/services/pricingEngine';
+import { calculateProductPrice, formatINR, isSilverProduct } from '@/services/pricingEngine';
 
 interface QuickViewModalProps {
   product: Product;
@@ -16,7 +16,7 @@ interface QuickViewModalProps {
 }
 
 export default function QuickViewModal({ product, onClose }: QuickViewModalProps) {
-  const { rates } = useGoldRates();
+  const { rates, isUpdatedRecently } = useGoldRates();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -118,20 +118,22 @@ Link: ${currentOrigin}/product/${product.slug}`;
           <div className="my-4 p-4 rounded-xl bg-[#FAF7F2] border border-[#E8E2D8]">
             <div className="flex items-baseline justify-between">
               <div>
-                <span className="text-2xl font-bold text-[#581825]">
+                <span className={`text-2xl font-bold transition-all ${
+                  isUpdatedRecently ? 'text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded' : 'text-[#581825]'
+                }`}>
                   {formatINR(priceBreakdown.finalPrice)}
                 </span>
                 <p className="text-[11px] text-[#78716C]">Inclusive of all taxes & making charges</p>
               </div>
               <span className="px-2 py-1 rounded bg-[#E8E2D8]/60 text-xs font-semibold text-[#380B12]">
-                {product.purity} Gold
+                {isSilverProduct(product) ? `${product.purity} Pure Silver` : `${product.purity} Gold`}
               </span>
             </div>
 
             {/* Quick Transparent Breakdown */}
             <div className="mt-3 pt-3 border-t border-[#E8E2D8] space-y-1 text-xs">
               <div className="flex justify-between text-[#78716C]">
-                <span>Net Gold ({priceBreakdown.netGoldWeight}g @ {formatINR(priceBreakdown.goldRateApplied)}/g):</span>
+                <span>Net {isSilverProduct(product) ? 'Silver' : 'Gold'} ({priceBreakdown.netGoldWeight}g @ {formatINR(priceBreakdown.goldRateApplied)}/g):</span>
                 <span className="font-medium text-[#1A1818]">{formatINR(priceBreakdown.goldValue)}</span>
               </div>
               <div className="flex justify-between text-[#78716C]">

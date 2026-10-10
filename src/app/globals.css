@@ -125,3 +125,24 @@
     display: block !important;
   }
 }
+
+/* Real-Time Live Bullion Rate Change Pulse Animation */
+@keyframes rate-flash-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    transform: scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    transform: scale(1);
+  }
+}
+
+.animate-rate-update {
+  animation: rate-flash-glow 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+

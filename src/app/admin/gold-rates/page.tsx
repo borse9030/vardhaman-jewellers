@@ -110,10 +110,68 @@ export default function AdminGoldRatesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Form Inputs */}
         <div className="lg:col-span-7 bg-[#171515] p-6 sm:p-8 rounded-2xl border border-white/10 space-y-6">
-          <h2 className="font-serif text-base font-bold text-white flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-[#C5A880]" />
-            Set New Spot Rates (₹ Per Gram)
+          <h2 className="font-serif text-base font-bold text-white flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-[#C5A880]" />
+              Set New Spot Rates (₹ Per Gram)
+            </span>
+            <span className="text-[10px] text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full font-sans">
+              Instant Sync Across Site
+            </span>
           </h2>
+
+          {/* Quick Adjustment Shortcuts */}
+          <div className="p-3 bg-[#2B2625] rounded-xl border border-white/5 space-y-2">
+            <span className="text-[11px] text-[#A8A29E] font-medium block">
+              1-Click Quick Adjusters (auto-fills below):
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setRate22K((prev) => prev + 25);
+                  setRate24K((prev) => prev + 27);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-emerald-900/40 hover:bg-emerald-800/60 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold"
+              >
+                +₹25 Gold
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRate22K((prev) => prev + 50);
+                  setRate24K((prev) => prev + 55);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-emerald-900/40 hover:bg-emerald-800/60 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold"
+              >
+                +₹50 Gold
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setRate22K((prev) => prev - 25);
+                  setRate24K((prev) => prev - 27);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 border border-rose-500/30 text-[11px] font-semibold"
+              >
+                -₹25 Gold
+              </button>
+              <button
+                type="button"
+                onClick={() => setRateSilver((prev) => Math.round((prev + 2) * 10) / 10)}
+                className="px-2.5 py-1 rounded-lg bg-blue-900/40 hover:bg-blue-800/60 text-blue-300 border border-blue-500/30 text-[11px] font-semibold"
+              >
+                +₹2 Silver
+              </button>
+              <button
+                type="button"
+                onClick={() => setRateSilver((prev) => Math.round((prev - 2) * 10) / 10)}
+                className="px-2.5 py-1 rounded-lg bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 border border-rose-500/30 text-[11px] font-semibold"
+              >
+                -₹2 Silver
+              </button>
+            </div>
+          </div>
 
           <form onSubmit={handleSaveRates} className="space-y-4 text-xs">
             <div className="grid grid-cols-2 gap-4">

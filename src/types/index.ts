@@ -63,12 +63,18 @@ export interface GoldRates {
   rate22K: number;
   rate18K: number;
   rateSilver: number;
+  rate14K?: number;
+  rateSilver1kg?: number;
   effectiveDate: string; // YYYY-MM-DD
   effectiveTime: string; // HH:mm AM/PM
   updatedBy: string;
   source?: string;
   notes?: string;
   lastUpdatedTimestamp: number;
+  change24K?: number;
+  change22K?: number;
+  change18K?: number;
+  changeSilver?: number;
 }
 
 export interface GoldRateHistoryItem extends GoldRates {
@@ -325,6 +331,7 @@ export interface AdminUser {
   name: string;
   role: AdminRole;
   isActive: boolean;
+  phone?: string;
   lastLogin?: string;
 }
 

@@ -29,7 +29,7 @@ import { getAllProducts } from '@/lib/db/productService';
 import { Product } from '@/types';
 
 export default function HomePage() {
-  const { rates } = useGoldRates();
+  const { rates, setIsLiveModalOpen, isUpdatedRecently, simulateRateDelta } = useGoldRates();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
@@ -212,45 +212,106 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 2. LIVE GOLD RATE STRIP (ADMIN-SYNCED) */}
-        <section className="bg-white border-y border-[#E8E2D8] py-3 sm:py-4 shadow-xs">
-          <div className="max-w-7xl mx-auto px-3 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-2.5 sm:gap-4">
-            <div className="flex items-center gap-2 text-[11px] sm:text-xs text-[#581825] w-full md:w-auto justify-between md:justify-start">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
-                <span className="font-bold uppercase tracking-wider">Live Bullion:</span>
+        {/* 2. LIVE GOLD & SILVER RATE STRIP (REAL-TIME AUTO-SYNCED) */}
+        <section
+          className={`bg-white border-y border-[#E8E2D8] py-3.5 sm:py-4.5 transition-all duration-500 shadow-xs ${
+            isUpdatedRecently ? 'bg-emerald-50/70 border-emerald-300 ring-2 ring-emerald-400/30' : ''
+          }`}
+        >
+          <div className="max-w-7xl mx-auto px-3 sm:px-8 flex flex-col lg:flex-row items-center justify-between gap-3 sm:gap-4">
+            {/* Header info */}
+            <div className="flex items-center gap-2.5 text-[11px] sm:text-xs text-[#581825] w-full lg:w-auto justify-between lg:justify-start">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <span className="font-bold uppercase tracking-wider text-[#380B12]">
+                  Live Bullion Rates:
+                </span>
               </div>
-              <span className="text-[#78716C] text-[10px] sm:text-xs">Updated {rates.effectiveTime}</span>
+              <span className="text-[#78716C] text-[10px] sm:text-xs flex items-center gap-1">
+                <span>Updated {rates.effectiveTime} Today</span>
+                <span className="text-emerald-700 font-semibold">• Live IBJA</span>
+              </span>
             </div>
 
-            <div className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
-              <div className="grid grid-cols-3 gap-1.5 sm:gap-3 w-full sm:w-auto text-xs font-medium">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 bg-[#FAF7F2] p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-[#E8E2D8] text-center sm:text-left">
-                  <span className="text-[10px] sm:text-xs text-[#78716C]">22K:</span>
+            {/* 4 Metal Price Badges: 22K, 24K, 18K, Silver */}
+            <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2.5 w-full sm:w-auto text-xs font-medium">
+                {/* 22K */}
+                <button
+                  onClick={() => setIsLiveModalOpen(true)}
+                  className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 bg-[#FAF7F2] hover:bg-[#F4EDE4] p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-[#E8E2D8] text-center sm:text-left transition-colors cursor-pointer"
+                  title="Click to calculate or view details"
+                >
+                  <span className="text-[10px] sm:text-xs text-[#78716C] font-medium">22K:</span>
                   <strong className="text-[#581825] font-bold text-xs sm:text-sm">{formatINR(rates.rate22K)}</strong>
-                  <span className="text-[9px] sm:text-[10px] text-[#78716C] hidden sm:inline">/g</span>
-                </div>
+                  <span className="text-[9px] sm:text-[10px] text-[#78716C]">/g</span>
+                  {rates.change22K !== undefined && rates.change22K !== 0 && (
+                    <span className={`text-[9px] font-bold px-1 rounded ${rates.change22K > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                      {rates.change22K > 0 ? '▲' : '▼'}{Math.abs(rates.change22K)}
+                    </span>
+                  )}
+                </button>
 
-                <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 bg-[#FAF7F2] p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-[#E8E2D8] text-center sm:text-left">
-                  <span className="text-[10px] sm:text-xs text-[#78716C]">24K:</span>
-                  <strong className="text-[#581825] font-bold text-xs sm:text-sm">{formatINR(rates.rate24K)}</strong>
-                  <span className="text-[9px] sm:text-[10px] text-[#78716C] hidden sm:inline">/g</span>
-                </div>
+                {/* 24K */}
+                <button
+                  onClick={() => setIsLiveModalOpen(true)}
+                  className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 bg-[#FAF7F2] hover:bg-[#F4EDE4] p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-[#E8E2D8] text-center sm:text-left transition-colors cursor-pointer"
+                  title="Click to calculate or view details"
+                >
+                  <span className="text-[10px] sm:text-xs text-[#78716C] font-medium">24K:</span>
+                  <strong className="text-[#1A1818] font-bold text-xs sm:text-sm">{formatINR(rates.rate24K)}</strong>
+                  <span className="text-[9px] sm:text-[10px] text-[#78716C]">/g</span>
+                </button>
 
-                <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 bg-[#FAF7F2] p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-[#E8E2D8] text-center sm:text-left">
-                  <span className="text-[10px] sm:text-xs text-[#78716C]">Silver:</span>
-                  <strong className="text-[#581825] font-bold text-xs sm:text-sm">{formatINR(rates.rateSilver)}</strong>
-                  <span className="text-[9px] sm:text-[10px] text-[#78716C] hidden sm:inline">/g</span>
-                </div>
+                {/* 18K */}
+                <button
+                  onClick={() => setIsLiveModalOpen(true)}
+                  className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 bg-[#FAF7F2] hover:bg-[#F4EDE4] p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-[#E8E2D8] text-center sm:text-left transition-colors cursor-pointer"
+                  title="Click to calculate or view details"
+                >
+                  <span className="text-[10px] sm:text-xs text-[#78716C] font-medium">18K:</span>
+                  <strong className="text-[#1A1818] font-bold text-xs sm:text-sm">{formatINR(rates.rate18K)}</strong>
+                  <span className="text-[9px] sm:text-[10px] text-[#78716C]">/g</span>
+                </button>
+
+                {/* Silver */}
+                <button
+                  onClick={() => setIsLiveModalOpen(true)}
+                  className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-1.5 bg-[#FAF7F2] hover:bg-[#F4EDE4] p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-[#E8E2D8] text-center sm:text-left transition-colors cursor-pointer"
+                  title="Click to calculate or view details"
+                >
+                  <span className="text-[10px] sm:text-xs text-[#78716C] font-medium">Silver:</span>
+                  <strong className="text-[#1A1818] font-bold text-xs sm:text-sm">{formatINR(rates.rateSilver)}</strong>
+                  <span className="text-[9px] sm:text-[10px] text-[#78716C]">/g</span>
+                  {rates.changeSilver !== undefined && rates.changeSilver !== 0 && (
+                    <span className={`text-[9px] font-bold px-1 rounded ${rates.changeSilver > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                      {rates.changeSilver > 0 ? '▲' : '▼'}{Math.abs(rates.changeSilver)}
+                    </span>
+                  )}
+                </button>
               </div>
 
-              <Link
-                href="/gold-rate"
-                className="text-[11px] sm:text-xs font-semibold text-[#9A7B4F] hover:text-[#581825] underline underline-offset-4 flex items-center gap-1 self-end sm:self-center"
-              >
-                <span>Rate History</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 self-end sm:self-center">
+                <button
+                  onClick={() => setIsLiveModalOpen(true)}
+                  className="px-3 py-1.5 rounded-full bg-[#581825] hover:bg-[#380B12] text-white text-[11px] font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+                >
+                  <Sparkles className="w-3 h-3 text-[#C5A880]" />
+                  <span>Calculator & Tester</span>
+                </button>
+
+                <Link
+                  href="/gold-rate"
+                  className="text-[11px] sm:text-xs font-semibold text-[#9A7B4F] hover:text-[#581825] underline underline-offset-4 flex items-center gap-1"
+                >
+                  <span>Rate History</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
             </div>
           </div>
         </section>
