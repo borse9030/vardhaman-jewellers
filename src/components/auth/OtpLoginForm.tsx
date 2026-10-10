@@ -19,6 +19,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { auth } from '@/lib/firebase/config';
 import { RecaptchaVerifier } from 'firebase/auth';
+import { isAuthorizedOwner } from '@/config/ownerAccess';
 
 interface OtpLoginFormProps {
   redirectAfterLogin?: string;
@@ -489,16 +490,16 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
               </div>
             </div>
 
-            {/* Secret administrator testing bypass only */}
-            {phone.replace(/\D/g, '').endsWith('9822123456') && (
+            {/* Authorized store head / owner quick test code */}
+            {isAuthorizedOwner(phone) && (
               <div className="text-center pt-0.5">
                 <button
                   type="button"
                   onClick={() => fillDemoOtp('123456')}
-                  className="text-[11px] text-[#A8A29E] hover:text-[#581825] transition-colors cursor-pointer inline-flex items-center gap-1"
+                  className="text-[11px] text-[#A8A29E] hover:text-[#581825] transition-colors cursor-pointer inline-flex items-center gap-1 font-medium"
                 >
                   <Sparkles className="w-3 h-3 text-[#C5A880]" />
-                  <span>Auto-fill admin bypass code (123456)</span>
+                  <span>Auto-fill owner access code (123456)</span>
                 </button>
               </div>
             )}

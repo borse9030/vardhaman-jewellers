@@ -20,6 +20,8 @@ import {
   Menu,
   X,
   Sparkles,
+  ShieldAlert,
+  ArrowRight,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useGoldRates } from '@/context/GoldRateContext';
@@ -28,20 +30,68 @@ import { formatINR } from '@/services/pricingEngine';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { adminUser, isAdminLoggedIn, authReady, logoutAdmin } = useAuth();
+  const { adminUser, customer, isAdminLoggedIn, authReady, logoutAdmin, logoutCustomer, ownerProfile } = useAuth();
   const { rates } = useGoldRates();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Redirect to login if not authenticated (only after session check is ready)
+  // Redirect unauthenticated visitors to login (only after session check is ready)
   useEffect(() => {
-    if (authReady && !isAdminLoggedIn && pathname !== '/admin/login') {
+    if (authReady && !isAdminLoggedIn && !customer && pathname !== '/admin/login') {
       router.push('/admin/login');
     }
-  }, [authReady, isAdminLoggedIn, pathname, router]);
+  }, [authReady, isAdminLoggedIn, customer, pathname, router]);
 
   // If on login page, render children directly without admin chrome
   if (pathname === '/admin/login') {
     return <>{children}</>;
+  }
+
+  // Security barrier: If logged in as regular customer without admin/owner privileges
+  if (authReady && customer && !isAdminLoggedIn) {
+    return (
+      <div className="min-h-screen bg-[#0F0E0E] flex items-center justify-center p-4 selection:bg-[#581825] selection:text-white">
+        <div className="max-w-md w-full bg-[#1A1818] border border-red-500/30 rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-red-600 via-[#C5A880] to-red-600"></div>
+
+          <div className="w-16 h-16 rounded-2xl bg-red-950/60 border border-red-500/30 flex items-center justify-center mx-auto mb-4 text-red-400 shadow-inner">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+
+          <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-900/40 text-red-300 border border-red-700/40 inline-block mb-3">
+            Access Restricted
+          </span>
+
+          <h1 className="font-serif text-xl sm:text-2xl font-bold text-white mb-2">
+            Store Head Authorization Required
+          </h1>
+
+          <p className="text-xs text-[#A8A29E] leading-relaxed mb-6">
+            The Administration Control Center is strictly confidential and reserved for the owners &amp; heads of Vardhaman Jewellers.
+            Your account ({customer.phone || customer.email || 'Store Patron'}) does not have administrative privileges.
+          </p>
+
+          <div className="flex flex-col gap-2.5">
+            <Link
+              href="/"
+              className="w-full py-3 rounded-xl bg-[#581825] hover:bg-[#782333] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Return to Storefront</span>
+              <ArrowRight className="w-4 h-4 text-[#C5A880]" />
+            </Link>
+
+            <button
+              onClick={() => {
+                logoutCustomer();
+                router.push('/admin/login');
+              }}
+              className="w-full py-2.5 rounded-xl border border-white/10 hover:border-white/20 text-[#A8A29E] hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+            >
+              Sign In with Owner Number
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!authReady || !isAdminLoggedIn) {
@@ -125,12 +175,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
 
             {/* Admin User Chip */}
-            <div className="mt-4 p-2.5 rounded-xl bg-[#2B2625]/60 border border-white/5 flex items-center justify-between text-xs">
+            <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-[#2B2625] to-[#380B12] border border-[#C5A880]/30 flex items-center justify-between text-xs">
               <div className="truncate">
-                <span className="text-[10px] text-[#A8A29E] block">Super Admin</span>
-                <span className="font-bold text-white truncate block">{adminUser?.email}</span>
+                <span className="text-[10px] text-[#C5A880] font-semibold flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-[#C5A880]" />
+                  <span>{ownerProfile?.roleTitle || 'Store Head (Owner)'}</span>
+                </span>
+                <span className="font-bold text-white truncate block mt-0.5">{adminUser?.name || 'Administrator'}</span>
+                <span className="text-[10px] text-[#A8A29E] block truncate">{adminUser?.phone || adminUser?.email}</span>
               </div>
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" title="Store Head Active"></span>
             </div>
           </div>
 

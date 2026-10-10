@@ -22,6 +22,8 @@ import {
   LogIn,
   LogOut,
   Calendar,
+  Crown,
+  ArrowRight,
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { useGoldRates } from '@/context/GoldRateContext';
@@ -37,7 +39,7 @@ export default function Header() {
   const { rates, setIsLiveModalOpen, isUpdatedRecently } = useGoldRates();
   const { itemCount, setIsCartDrawerOpen } = useCart();
   const { count: wishlistCount } = useWishlist();
-  const { customer, adminUser, isAdminLoggedIn, logoutCustomer, logoutAdmin } = useAuth();
+  const { customer, adminUser, isAdminLoggedIn, isOwnerLoggedIn, ownerProfile, logoutCustomer, logoutAdmin } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -314,6 +316,30 @@ export default function Header() {
                         </p>
                       </div>
 
+                      {/* Store Head / Owner Access Shortcut (STRICTLY HIDDEN FROM REGULAR PATRONS) */}
+                      {(isAdminLoggedIn || isOwnerLoggedIn) && (
+                        <div className="p-2 border-b border-[#F0ECE4] bg-gradient-to-r from-[#FAF7F2] to-[#F5EFE6]">
+                          <Link
+                            href="/admin"
+                            onClick={() => setIsAccountMenuOpen(false)}
+                            className="flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-[#581825] to-[#380B12] text-white shadow-md hover:from-[#782333] hover:to-[#4A101A] transition-all group"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Crown className="w-4 h-4 text-[#C5A880] shrink-0" />
+                              <div className="text-left">
+                                <span className="text-[9px] uppercase tracking-wider text-[#DFCDAE] block font-bold">
+                                  Owner Access
+                                </span>
+                                <span className="text-xs font-bold text-white block">
+                                  Admin Control Panel
+                                </span>
+                              </div>
+                            </div>
+                            <ArrowRight className="w-3.5 h-3.5 text-[#C5A880] transition-transform group-hover:translate-x-1" />
+                          </Link>
+                        </div>
+                      )}
+
                       <div className="py-1.5">
                         <Link
                           href="/profile"
@@ -493,6 +519,21 @@ export default function Header() {
               <div className="p-4 space-y-2 text-xs">
                 {customer || adminUser ? (
                   <>
+                    {(isAdminLoggedIn || isOwnerLoggedIn) && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-[#581825] to-[#380B12] text-white shadow-xs mb-1.5"
+                      >
+                        <span className="flex items-center gap-2 font-bold text-xs">
+                          <Crown className="w-4 h-4 text-[#C5A880]" />
+                          <span>Admin Control Panel</span>
+                        </span>
+                        <span className="text-[10px] bg-[#C5A880]/20 text-[#DFCDAE] px-2 py-0.5 rounded-full font-bold">
+                          Owner
+                        </span>
+                      </Link>
+                    )}
                     <Link
                       href="/profile"
                       onClick={() => setIsMobileMenuOpen(false)}

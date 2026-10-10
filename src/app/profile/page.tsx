@@ -12,6 +12,13 @@ import {
   Plus,
   ShieldCheck,
   CheckCircle2,
+  Crown,
+  ArrowRight,
+  TrendingUp,
+  Gem,
+  Tag,
+  Settings,
+  MessageSquare,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -20,7 +27,7 @@ import { useAuth } from '@/context/AuthContext';
 import OtpLoginForm from '@/components/auth/OtpLoginForm';
 
 export default function ProfilePage() {
-  const { customer, logoutCustomer } = useAuth();
+  const { customer, adminUser, isAdminLoggedIn, isOwnerLoggedIn, ownerProfile, logoutCustomer, logoutAdmin } = useAuth();
 
   // Address state
   const [addresses, setAddresses] = useState([
@@ -71,7 +78,7 @@ export default function ProfilePage() {
       <Header />
 
       <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-8 py-10 sm:py-16">
-        {!customer ? (
+        {!customer && !adminUser ? (
           <div className="py-4">
             <OtpLoginForm redirectAfterLogin="/profile" sourceContext="storefront" />
           </div>
@@ -80,26 +87,147 @@ export default function ProfilePage() {
             {/* Profile Overview Card */}
             <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#E8E2D8] shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-[#FAF7F2] border border-[#C5A880] flex items-center justify-center font-serif text-lg font-bold text-[#581825]">
-                  {customer.name[0]?.toUpperCase() || 'V'}
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FAF7F2] to-[#EAE0D0] border-2 border-[#C5A880] flex items-center justify-center font-serif text-lg font-bold text-[#581825] shadow-xs">
+                  {customer?.name?.[0]?.toUpperCase() || adminUser?.name?.[0]?.toUpperCase() || 'V'}
                 </div>
                 <div>
-                  <h1 className="font-serif text-xl sm:text-2xl font-bold text-[#1A1818]">
-                    {customer.name}
-                  </h1>
-                  <p className="text-xs text-[#78716C] mt-0.5">{customer.email}</p>
-                  {customer.phone && <p className="text-xs text-[#78716C]">{customer.phone}</p>}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="font-serif text-xl sm:text-2xl font-bold text-[#1A1818]">
+                      {customer?.name || adminUser?.name || 'Valued Patron'}
+                    </h1>
+                    {(isAdminLoggedIn || isOwnerLoggedIn) && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#581825] text-[#DFCDAE] border border-[#C5A880]/40">
+                        <Crown className="w-3 h-3 text-[#C5A880]" />
+                        <span>Store Head &amp; Owner</span>
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[#78716C] mt-0.5">{customer?.email || adminUser?.email}</p>
+                  {(customer?.phone || adminUser?.phone) && (
+                    <p className="text-xs text-[#9A7B4F] font-medium">{customer?.phone || adminUser?.phone}</p>
+                  )}
                 </div>
               </div>
 
               <button
-                onClick={logoutCustomer}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#E8E2D8] text-xs font-semibold text-red-700 hover:bg-red-50"
+                onClick={() => {
+                  logoutCustomer();
+                  logoutAdmin();
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#E8E2D8] text-xs font-semibold text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Log Out</span>
               </button>
             </div>
+
+            {/* EXCLUSIVE: Executive Store Control Center (STRICTLY FOR AUTHORIZED OWNERS) */}
+            {(isAdminLoggedIn || isOwnerLoggedIn) && (
+              <div className="bg-gradient-to-br from-[#2D0A11] via-[#1E060B] to-[#120306] border border-[#C5A880]/40 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+                {/* Gold Glow Accent */}
+                <div className="absolute top-0 right-0 w-80 h-80 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#C5A880]/20 via-transparent to-transparent pointer-events-none"></div>
+
+                {/* Header Banner */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 relative z-10">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#C5A880]/20 text-[#DFCDAE] border border-[#C5A880]/40">
+                        <Crown className="w-3 h-3 text-[#C5A880]" />
+                        <span>Executive Control Center</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-medium">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Full Website Control
+                      </span>
+                    </div>
+                    <h2 className="font-serif text-xl sm:text-2xl font-bold text-white pt-1">
+                      Store Head &amp; Owner Administration
+                    </h2>
+                    <p className="text-xs text-[#D6D3D1] max-w-2xl leading-relaxed">
+                      You are logged in as an authorized owner of Vardhaman Jewellers. You have complete operational control to update live bullion rates, manage the jewellery catalogue, track customer orders, and configure promotions.
+                    </p>
+                  </div>
+
+                  <Link
+                    href="/admin"
+                    className="shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#C5A880] to-[#DFCDAE] text-[#1A1818] font-bold text-xs uppercase tracking-wider transition-all hover:scale-105 shadow-md group"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-[#581825]" />
+                    <span>Open Admin Dashboard</span>
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </div>
+
+                {/* Quick Owner Action Cards Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 relative z-10 pt-2 border-t border-white/10">
+                  <Link
+                    href="/admin/gold-rates"
+                    className="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#C5A880]/50 transition-all text-center flex flex-col items-center group"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-[#581825] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                      <TrendingUp className="w-4 h-4 text-[#C5A880]" />
+                    </div>
+                    <span className="text-xs font-bold text-white block">Gold Rates</span>
+                    <span className="text-[10px] text-[#A8A29E] mt-0.5">Live Bullion</span>
+                  </Link>
+
+                  <Link
+                    href="/admin/products"
+                    className="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#C5A880]/50 transition-all text-center flex flex-col items-center group"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-[#581825] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                      <Gem className="w-4 h-4 text-[#C5A880]" />
+                    </div>
+                    <span className="text-xs font-bold text-white block">Catalogue</span>
+                    <span className="text-[10px] text-[#A8A29E] mt-0.5">4,000+ Items</span>
+                  </Link>
+
+                  <Link
+                    href="/admin/orders"
+                    className="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#C5A880]/50 transition-all text-center flex flex-col items-center group"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-[#581825] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                      <Package className="w-4 h-4 text-[#C5A880]" />
+                    </div>
+                    <span className="text-xs font-bold text-white block">Orders</span>
+                    <span className="text-[10px] text-[#A8A29E] mt-0.5">Invoices &amp; Ship</span>
+                  </Link>
+
+                  <Link
+                    href="/admin/enquiries"
+                    className="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#C5A880]/50 transition-all text-center flex flex-col items-center group"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-[#581825] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                      <MessageSquare className="w-4 h-4 text-[#C5A880]" />
+                    </div>
+                    <span className="text-xs font-bold text-white block">Enquiries</span>
+                    <span className="text-[10px] text-[#A8A29E] mt-0.5">Appointments</span>
+                  </Link>
+
+                  <Link
+                    href="/admin/coupons"
+                    className="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#C5A880]/50 transition-all text-center flex flex-col items-center group"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-[#581825] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                      <Tag className="w-4 h-4 text-[#C5A880]" />
+                    </div>
+                    <span className="text-xs font-bold text-white block">Coupons</span>
+                    <span className="text-[10px] text-[#A8A29E] mt-0.5">Promotions</span>
+                  </Link>
+
+                  <Link
+                    href="/admin/settings"
+                    className="p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#C5A880]/50 transition-all text-center flex flex-col items-center group"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-[#581825] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                      <Settings className="w-4 h-4 text-[#C5A880]" />
+                    </div>
+                    <span className="text-xs font-bold text-white block">Settings</span>
+                    <span className="text-[10px] text-[#A8A29E] mt-0.5">Store Config</span>
+                  </Link>
+                </div>
+              </div>
+            )}
 
             {/* Quick Navigation Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

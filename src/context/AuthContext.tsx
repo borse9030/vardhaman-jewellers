@@ -11,6 +11,13 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from 'firebase/auth';
+import {
+  AUTHORIZED_OWNERS,
+  OwnerProfile,
+  getOwnerProfile,
+  isAuthorizedOwner,
+  formatIndianPhone,
+} from '@/config/ownerAccess';
 
 // Window extension for Firebase Phone Auth
 declare global {
@@ -32,6 +39,8 @@ interface AuthContextType {
   customer: CustomerUser | null;
   adminUser: AdminUser | null;
   isAdminLoggedIn: boolean;
+  isOwnerLoggedIn: boolean;
+  ownerProfile: OwnerProfile | null;
   authReady: boolean;
   loginCustomer: (email: string, name?: string, phone?: string) => void;
   logoutCustomer: () => void;
@@ -39,13 +48,15 @@ interface AuthContextType {
   logoutAdmin: () => void;
   hasRole: (roles: AdminRole[]) => boolean;
   sendOtp: (phone: string) => Promise<{ success: boolean; message?: string; otpPreview?: string; formattedPhone?: string }>;
-  verifyOtp: (phone: string, otp: string) => Promise<{ success: boolean; role?: 'super_admin' | 'customer'; message?: string }>;
+  verifyOtp: (phone: string, otp: string) => Promise<{ success: boolean; role?: 'super_admin' | 'customer'; message?: string; isOwner?: boolean }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   customer: null,
   adminUser: null,
   isAdminLoggedIn: false,
+  isOwnerLoggedIn: false,
+  ownerProfile: null,
   authReady: false,
   loginCustomer: () => {},
   logoutCustomer: () => {},
@@ -81,13 +92,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isFirebaseConfigured && auth) {
       const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
         if (fbUser) {
+          const owner = getOwnerProfile(fbUser.phoneNumber);
+          if (owner) {
+            const adminUserObj: AdminUser = {
+              uid: fbUser.uid,
+              name: owner.name,
+              email: fbUser.email || owner.email,
+              phone: fbUser.phoneNumber || formatIndianPhone(owner.phone),
+              role: 'super_admin',
+              isActive: true,
+            };
+            setAdminUser((prev) => prev || adminUserObj);
+            try {
+              localStorage.setItem('vj_admin_user', JSON.stringify(adminUserObj));
+              if (!localStorage.getItem('vj_admin_token')) {
+                localStorage.setItem('vj_admin_token', `vj_adm_fb_${Date.now()}_${owner.phone}`);
+              }
+            } catch (e) {
+              console.warn('Storage sync error:', e);
+            }
+          }
+
           setCustomer((prev) => {
             if (!prev) {
               const restored: CustomerUser = {
                 uid: fbUser.uid,
-                name: fbUser.displayName || 'Valued Patron',
-                email: fbUser.email || '',
-                phone: fbUser.phoneNumber || '',
+                name: owner ? owner.name : fbUser.displayName || 'Valued Patron',
+                email: fbUser.email || (owner ? owner.email : ''),
+                phone: fbUser.phoneNumber || (owner ? formatIndianPhone(owner.phone) : ''),
                 isGuest: false,
               };
               localStorage.setItem('vj_customer_user', JSON.stringify(restored));
@@ -277,26 +309,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const verifyOtp = async (phone: string, otp: string): Promise<{ success: boolean; role?: 'super_admin' | 'customer'; message?: string }> => {
+  const verifyOtp = async (phone: string, otp: string): Promise<{ success: boolean; role?: 'super_admin' | 'customer'; message?: string; isOwner?: boolean }> => {
     try {
       const cleanPhone = phone.replace(/\D/g, '').slice(-10);
-      const formattedDisplay = `+91 ${cleanPhone.slice(0, 5)} ${cleanPhone.slice(5)}`;
-      const isAdmin = cleanPhone === '9822123456';
+      const formattedDisplay = formatIndianPhone(cleanPhone);
+      const owner = getOwnerProfile(cleanPhone);
+      const isOwner = Boolean(owner);
 
-      // 1. Instant bypass for secret admin test credentials (9822123456 + 123456)
-      if (isAdmin && otp.trim() === '123456') {
+      // 1. Instant bypass for authorized store heads/owners during testing (7972565911, 7498806028, 9822123456 + 123456)
+      if (isOwner && otp.trim() === '123456') {
         const adminUserObj: AdminUser = {
           uid: `adm-${cleanPhone}`,
-          name: 'Jaynam (Administrator)',
-          email: 'jaynam27@gmail.com',
+          name: owner!.name,
+          email: owner!.email,
           phone: formattedDisplay,
           role: 'super_admin',
           isActive: true,
         };
+
+        const customerObj: CustomerUser = {
+          uid: `owner-cust-${cleanPhone}`,
+          name: owner!.name,
+          email: owner!.email,
+          phone: formattedDisplay,
+          isGuest: false,
+        };
+
         setAdminUser(adminUserObj);
+        setCustomer(customerObj);
         localStorage.setItem('vj_admin_user', JSON.stringify(adminUserObj));
-        localStorage.setItem('vj_admin_token', `vj_adm_otp_${Date.now()}`);
-        return { success: true, role: 'super_admin', message: 'Administrative access verified.' };
+        localStorage.setItem('vj_admin_token', `vj_adm_otp_${Date.now()}_${cleanPhone}`);
+        localStorage.setItem('vj_customer_user', JSON.stringify(customerObj));
+
+        return {
+          success: true,
+          role: 'super_admin',
+          isOwner: true,
+          message: `Welcome, ${owner!.name}. Full store owner administrative access granted.`,
+        };
       }
 
       // 2. PRIMARY: Verify via Firebase confirmationResult
@@ -305,22 +355,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const userCred = await window.confirmationResult.confirm(otp.trim());
           const fbUser = userCred.user;
 
-          if (isAdmin) {
+          if (isOwner) {
             const adminUserObj: AdminUser = {
               uid: fbUser.uid,
-              name: 'Jaynam (Administrator)',
-              email: fbUser.email || 'jaynam27@gmail.com',
+              name: owner!.name,
+              email: fbUser.email || owner!.email,
               phone: fbUser.phoneNumber || formattedDisplay,
               role: 'super_admin',
               isActive: true,
             };
+
+            const customerObj: CustomerUser = {
+              uid: fbUser.uid,
+              name: owner!.name,
+              email: fbUser.email || owner!.email,
+              phone: fbUser.phoneNumber || formattedDisplay,
+              isGuest: false,
+            };
+
             setAdminUser(adminUserObj);
+            setCustomer(customerObj);
             localStorage.setItem('vj_admin_user', JSON.stringify(adminUserObj));
-            localStorage.setItem('vj_admin_token', `vj_adm_otp_${Date.now()}`);
-            return { success: true, role: 'super_admin', message: 'Administrative access verified.' };
+            localStorage.setItem('vj_admin_token', `vj_adm_otp_${Date.now()}_${cleanPhone}`);
+            localStorage.setItem('vj_customer_user', JSON.stringify(customerObj));
+
+            return {
+              success: true,
+              role: 'super_admin',
+              isOwner: true,
+              message: `Welcome, ${owner!.name}. Full store owner administrative access granted.`,
+            };
           }
 
-          // Customer user
+          // Regular customer user - ensure admin session is cleared for security
+          setAdminUser(null);
+          localStorage.removeItem('vj_admin_user');
+          localStorage.removeItem('vj_admin_token');
+
           const customerObj: CustomerUser = {
             uid: fbUser.uid,
             name: fbUser.displayName || 'Valued Patron',
@@ -334,6 +405,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return {
             success: true,
             role: 'customer',
+            isOwner: false,
             message: 'Mobile verification successful. Welcome to Vardhaman Jewellers.',
           };
         } catch (fbErr: any) {
@@ -352,11 +424,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setAdminUser(fallbackData.user);
                 localStorage.setItem('vj_admin_user', JSON.stringify(fallbackData.user));
                 if (fallbackData.token) localStorage.setItem('vj_admin_token', fallbackData.token);
+                if (fallbackData.customer) {
+                  setCustomer(fallbackData.customer);
+                  localStorage.setItem('vj_customer_user', JSON.stringify(fallbackData.customer));
+                }
+                return { success: true, role: 'super_admin', isOwner: true, message: fallbackData.message };
               } else {
+                setAdminUser(null);
+                localStorage.removeItem('vj_admin_user');
+                localStorage.removeItem('vj_admin_token');
                 setCustomer(fallbackData.user);
                 localStorage.setItem('vj_customer_user', JSON.stringify(fallbackData.user));
+                return { success: true, role: 'customer', isOwner: false, message: fallbackData.message };
               }
-              return { success: true, role: fallbackData.role, message: fallbackData.message };
             }
           } catch (e) {
             // ignore fallback error and report Firebase error
@@ -389,11 +469,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (data.token) {
             localStorage.setItem('vj_admin_token', data.token);
           }
+          if (data.customer) {
+            setCustomer(data.customer);
+            localStorage.setItem('vj_customer_user', JSON.stringify(data.customer));
+          }
+          return { success: true, role: data.role, isOwner: true, message: data.message };
         } else {
+          setAdminUser(null);
+          localStorage.removeItem('vj_admin_user');
+          localStorage.removeItem('vj_admin_token');
           setCustomer(data.user);
           localStorage.setItem('vj_customer_user', JSON.stringify(data.user));
+          return { success: true, role: data.role, isOwner: false, message: data.message };
         }
-        return { success: true, role: data.role, message: data.message };
       }
       return { success: false, message: data.message || 'Invalid verification code.' };
     } catch (e: any) {
@@ -402,12 +490,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const isOwnerLoggedIn = Boolean(
+    (adminUser && isAuthorizedOwner(adminUser.phone)) ||
+    (customer && isAuthorizedOwner(customer.phone))
+  );
+  const currentOwnerProfile = getOwnerProfile(adminUser?.phone || customer?.phone);
+
   return (
     <AuthContext.Provider
       value={{
         customer,
         adminUser,
         isAdminLoggedIn: Boolean(adminUser),
+        isOwnerLoggedIn,
+        ownerProfile: currentOwnerProfile,
         authReady,
         loginCustomer,
         logoutCustomer,

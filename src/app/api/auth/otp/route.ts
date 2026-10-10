@@ -32,9 +32,11 @@ function normalizePhone(rawPhone: string): string {
   return cleaned;
 }
 
-// Known authorized administrator mobile numbers
+import { getOwnerProfile, isAuthorizedOwner, OWNER_PHONE_NUMBERS } from '@/config/ownerAccess';
+
+// Authorized administrator & store owner mobile numbers
 const ADMIN_PHONES = [
-  '9822123456',
+  ...OWNER_PHONE_NUMBERS,
   process.env.ADMIN_PHONE ? normalizePhone(process.env.ADMIN_PHONE) : '',
 ].filter(Boolean);
 
@@ -117,13 +119,25 @@ export async function POST(request: Request) {
       const isAdmin = ADMIN_PHONES.includes(cleanPhone);
 
       if (isAdmin) {
+        const ownerProfile = getOwnerProfile(cleanPhone);
+        const ownerName = ownerProfile?.name || 'Administrator (Vardhaman Jewellers)';
+        const ownerEmail = ownerProfile?.email || process.env.ADMIN_EMAIL || 'owner@vardhamanjewellers.com';
+
         const adminUser = {
           uid: `adm-${cleanPhone}`,
-          name: 'Jaynam (Administrator)',
-          email: process.env.ADMIN_EMAIL || 'jaynam27@gmail.com',
+          name: ownerName,
+          email: ownerEmail,
           phone: formattedDisplay,
           role: 'super_admin' as const,
           isActive: true,
+        };
+
+        const customerUser = {
+          uid: `owner-cust-${cleanPhone}`,
+          name: ownerName,
+          email: ownerEmail,
+          phone: formattedDisplay,
+          isGuest: false,
         };
 
         const token = `vj_adm_otp_${Date.now()}_${Buffer.from(cleanPhone).toString('base64')}`;
@@ -131,9 +145,11 @@ export async function POST(request: Request) {
         return NextResponse.json({
           success: true,
           role: 'super_admin',
-          message: 'Administrative access verified via mobile OTP.',
+          message: 'Executive store owner access verified.',
           user: adminUser,
+          customer: customerUser,
           token,
+          isOwner: true,
         });
       }
 
