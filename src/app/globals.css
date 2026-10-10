@@ -26,8 +26,8 @@
   }
 
   html {
-    overflow-x: hidden;
-    max-width: 100%;
+    overflow-x: clip;
+    max-width: 100vw;
     width: 100%;
     -webkit-text-size-adjust: 100%;
   }
@@ -36,8 +36,8 @@
     background-color: var(--bg-ivory-light);
     color: var(--charcoal-dark);
     font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    overflow-x: hidden;
-    max-width: 100%;
+    overflow-x: clip;
+    max-width: 100vw;
     width: 100%;
     position: relative;
     -webkit-font-smoothing: antialiased;

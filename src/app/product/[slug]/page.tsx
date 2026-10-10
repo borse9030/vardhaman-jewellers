@@ -134,28 +134,28 @@ Please provide availability and viewing slot details.`;
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF7F2]">
+    <div className="min-h-screen flex flex-col bg-[#FAF7F2] w-full max-w-full overflow-x-hidden">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-8 py-4 sm:py-12 pb-28 lg:pb-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-3.5 sm:px-8 py-4 sm:py-12 pb-28 lg:pb-12 min-w-0">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-1.5 text-xs text-[#78716C] mb-4 sm:mb-8 overflow-x-auto whitespace-nowrap no-scrollbar py-0.5">
+        <nav className="flex items-center gap-1.5 text-xs text-[#78716C] mb-4 sm:mb-8 overflow-x-auto whitespace-nowrap no-scrollbar py-0.5 w-full max-w-full min-w-0">
           <Link href="/" className="hover:text-[#581825] shrink-0">Home</Link>
           <ChevronRight className="w-3.5 h-3.5 text-[#A8A29E] shrink-0" />
           <Link href="/shop" className="hover:text-[#581825] shrink-0">Jewellery</Link>
           <ChevronRight className="w-3.5 h-3.5 text-[#A8A29E] shrink-0" />
           <Link href={`/${product.category.toLowerCase()}`} className="hover:text-[#581825] shrink-0">{product.category}</Link>
           <ChevronRight className="w-3.5 h-3.5 text-[#A8A29E] shrink-0" />
-          <span className="text-[#1A1818] font-semibold truncate max-w-[130px] sm:max-w-xs shrink-0" title={product.name}>
+          <span className="text-[#1A1818] font-semibold truncate max-w-[110px] sm:max-w-xs shrink-0" title={product.name}>
             {product.name}
           </span>
         </nav>
 
         {/* Main PDP Grid (Left Gallery, Right Product Info & Price Breakdown) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 w-full max-w-full min-w-0">
           {/* LEFT: Image Gallery */}
-          <div className="lg:col-span-7 space-y-4">
-            <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white border border-[#E8E2D8] shadow-sm">
+          <div className="lg:col-span-7 space-y-4 w-full max-w-full min-w-0">
+            <div className="relative aspect-square w-full max-w-full rounded-2xl overflow-hidden bg-white border border-[#E8E2D8] shadow-sm">
               <Image
                 src={gallery[selectedImageIndex] || product.thumbnail}
                 alt={product.name}
@@ -165,7 +165,7 @@ Please provide availability and viewing slot details.`;
               />
 
               {/* Badges */}
-              <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10">
+              <div className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 flex flex-col gap-1.5 z-10">
                 {product.bestSeller && (
                   <span className="px-2.5 py-1 rounded bg-[#581825] text-white text-[10px] font-bold uppercase tracking-wider">
                     Bestseller
@@ -180,13 +180,13 @@ Please provide availability and viewing slot details.`;
               {/* Share button */}
               <button
                 onClick={handleShare}
-                className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/90 hover:bg-[#581825] hover:text-white flex items-center justify-center text-[#581825] shadow-sm transition-colors"
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-[#581825] hover:text-white flex items-center justify-center text-[#581825] shadow-sm transition-colors"
                 title="Share link"
               >
                 <Share2 className="w-4 h-4" />
               </button>
               {isCopied && (
-                <div className="absolute top-16 right-4 z-10 bg-black/80 text-white text-[10px] px-2 py-1 rounded">
+                <div className="absolute top-14 right-3 z-10 bg-black/80 text-white text-[10px] px-2 py-1 rounded">
                   Link copied!
                 </div>
               )}
@@ -194,7 +194,7 @@ Please provide availability and viewing slot details.`;
 
             {/* Thumbnail Navigation */}
             {gallery.length > 1 && (
-              <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 no-scrollbar">
+              <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 no-scrollbar w-full max-w-full min-w-0">
                 {gallery.map((img, idx) => (
                   <button
                     key={idx}
@@ -211,8 +211,8 @@ Please provide availability and viewing slot details.`;
           </div>
 
           {/* RIGHT: Product Details & Live Pricing Engine */}
-          <div className="lg:col-span-5 space-y-6">
-            <div>
+          <div className="lg:col-span-5 space-y-5 sm:space-y-6 w-full max-w-full min-w-0">
+            <div className="w-full max-w-full min-w-0">
               <div className="flex items-center justify-between text-xs text-[#78716C] mb-2 gap-2">
                 <span className="shrink-0">SKU: <strong className="text-[#1A1818]">{product.SKU}</strong></span>
                 <span className="text-emerald-700 font-semibold flex items-center gap-1 shrink-0 text-[11px] sm:text-xs">
@@ -235,7 +235,7 @@ Please provide availability and viewing slot details.`;
             </div>
 
             {/* Live Pricing Breakdown Card */}
-            <div className={`p-4 sm:p-5 rounded-2xl bg-white border border-[#E8E2D8] shadow-xs space-y-3.5 transition-all duration-300 ${
+            <div className={`p-3.5 sm:p-5 rounded-2xl bg-white border border-[#E8E2D8] shadow-xs space-y-3.5 transition-all duration-300 w-full max-w-full min-w-0 ${
               isUpdatedRecently ? 'ring-2 ring-emerald-400 bg-emerald-50/20' : ''
             }`}>
               <div className="flex items-baseline justify-between border-b border-[#F0ECE4] pb-3 gap-2">
@@ -330,20 +330,20 @@ Please provide availability and viewing slot details.`;
             </div>
 
             {/* Quantity Selector & Action Buttons */}
-            <div className="space-y-3 pt-1">
-              <div className="flex items-center gap-2 sm:gap-3">
+            <div className="space-y-3 pt-1 w-full max-w-full min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3 w-full max-w-full min-w-0">
                 {/* Quantity */}
                 <div className="flex items-center border border-[#E8E2D8] rounded-xl bg-white shrink-0">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-2 text-sm font-bold text-[#581825] hover:bg-[#FAF7F2] transition-colors"
+                    className="px-2.5 sm:px-3 py-2 text-sm font-bold text-[#581825] hover:bg-[#FAF7F2] transition-colors"
                   >
                     -
                   </button>
-                  <span className="px-2.5 text-xs font-semibold">{quantity}</span>
+                  <span className="px-2 text-xs font-semibold">{quantity}</span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="px-3 py-2 text-sm font-bold text-[#581825] hover:bg-[#FAF7F2] transition-colors"
+                    className="px-2.5 sm:px-3 py-2 text-sm font-bold text-[#581825] hover:bg-[#FAF7F2] transition-colors"
                   >
                     +
                   </button>
@@ -352,7 +352,7 @@ Please provide availability and viewing slot details.`;
                 {/* Add to Cart */}
                 <button
                   onClick={() => addToCart(product, quantity)}
-                  className="flex-1 py-3 px-3 sm:px-4 rounded-xl bg-[#FAF7F2] hover:bg-[#581825] text-[#581825] hover:text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-[#E8E2D8] hover:border-[#581825] shadow-xs min-w-0"
+                  className="flex-1 py-3 px-2 sm:px-4 rounded-xl bg-[#FAF7F2] hover:bg-[#581825] text-[#581825] hover:text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 sm:gap-2 border border-[#E8E2D8] hover:border-[#581825] shadow-xs min-w-0"
                 >
                   <ShoppingBag className="w-4 h-4 shrink-0" />
                   <span className="truncate">Add to Bag</span>
@@ -361,7 +361,7 @@ Please provide availability and viewing slot details.`;
                 {/* Wishlist */}
                 <button
                   onClick={() => toggleWishlist(product)}
-                  className="p-3 rounded-xl border border-[#E8E2D8] hover:bg-[#FAF7F2] text-[#581825] transition-colors shrink-0"
+                  className="p-2.5 sm:p-3 rounded-xl border border-[#E8E2D8] hover:bg-[#FAF7F2] text-[#581825] transition-colors shrink-0"
                   title="Wishlist"
                 >
                   <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-[#581825]' : ''}`} />
@@ -371,14 +371,13 @@ Please provide availability and viewing slot details.`;
               {/* Buy Now Primary CTA */}
               <button
                 onClick={handleBuyNow}
-                className="w-full py-3.5 px-4 rounded-xl bg-[#581825] hover:bg-[#380B12] text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-2"
+                className="w-full py-3.5 px-3 sm:px-4 rounded-xl bg-[#581825] hover:bg-[#380B12] text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span className="hidden sm:inline">Buy Now (Instant Insured Checkout)</span>
-                <span className="sm:hidden">Buy Now • Insured Checkout</span>
+                <span className="truncate">Buy Now • Insured Checkout</span>
               </button>
 
               {/* WhatsApp Enquiry & Book Appointment */}
-              <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="grid grid-cols-2 gap-2 pt-1 w-full max-w-full min-w-0">
                 <a
                   href={whatsappUrl}
                   onClick={handleWhatsAppClick}
@@ -401,7 +400,7 @@ Please provide availability and viewing slot details.`;
             </div>
 
             {/* Trust Assurances Icons */}
-            <div className="p-3 sm:p-4 rounded-xl bg-white border border-[#E8E2D8] grid grid-cols-2 gap-2 sm:gap-3 text-[10px] sm:text-xs text-[#44403C]">
+            <div className="p-3 sm:p-4 rounded-xl bg-white border border-[#E8E2D8] grid grid-cols-2 gap-2 sm:gap-3 text-[10px] sm:text-xs text-[#44403C] w-full max-w-full min-w-0">
               <div className="flex items-center gap-1.5 min-w-0">
                 <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#581825] shrink-0" />
                 <span className="truncate font-medium">BIS 916 Hallmark</span>
@@ -423,31 +422,31 @@ Please provide availability and viewing slot details.`;
         </div>
 
         {/* Detailed Tabs: Specifications, Policies, Care */}
-        <div className="mt-12 sm:mt-16 pt-8 sm:pt-10 border-t border-[#E8E2D8]">
-          <div className="flex gap-4 sm:gap-6 border-b border-[#E8E2D8] pb-2 sm:pb-3 text-xs sm:text-sm font-semibold overflow-x-auto whitespace-nowrap no-scrollbar">
+        <div className="mt-10 sm:mt-16 pt-6 sm:pt-10 border-t border-[#E8E2D8] w-full max-w-full min-w-0">
+          <div className="flex gap-2 sm:gap-6 border-b border-[#E8E2D8] pb-2 sm:pb-3 text-xs sm:text-sm font-semibold overflow-x-auto whitespace-nowrap no-scrollbar w-full max-w-full min-w-0">
             <button
               onClick={() => setActiveTab('specs')}
-              className={`pb-2 transition-colors relative shrink-0 ${
+              className={`pb-2 px-1 text-[11px] sm:text-xs md:text-sm transition-colors relative shrink-0 ${
                 activeTab === 'specs' ? 'text-[#581825] font-bold' : 'text-[#78716C] hover:text-[#1A1818]'
               }`}
             >
-              Product Specifications
+              Specifications
               {activeTab === 'specs' && <span className="absolute bottom-[-9px] sm:bottom-[-13px] inset-x-0 h-0.5 bg-[#581825]"></span>}
             </button>
 
             <button
               onClick={() => setActiveTab('policies')}
-              className={`pb-2 transition-colors relative shrink-0 ${
+              className={`pb-2 px-1 text-[11px] sm:text-xs md:text-sm transition-colors relative shrink-0 ${
                 activeTab === 'policies' ? 'text-[#581825] font-bold' : 'text-[#78716C] hover:text-[#1A1818]'
               }`}
             >
-              Lifetime Exchange & Buyback
+              Exchange & Buyback
               {activeTab === 'policies' && <span className="absolute bottom-[-9px] sm:bottom-[-13px] inset-x-0 h-0.5 bg-[#581825]"></span>}
             </button>
 
             <button
               onClick={() => setActiveTab('care')}
-              className={`pb-2 transition-colors relative shrink-0 ${
+              className={`pb-2 px-1 text-[11px] sm:text-xs md:text-sm transition-colors relative shrink-0 ${
                 activeTab === 'care' ? 'text-[#581825] font-bold' : 'text-[#78716C] hover:text-[#1A1818]'
               }`}
             >
@@ -456,38 +455,38 @@ Please provide availability and viewing slot details.`;
             </button>
           </div>
 
-          <div className="py-6">
+          <div className="py-5 sm:py-6 w-full max-w-full min-w-0">
             {activeTab === 'specs' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-4 max-w-3xl text-xs">
-                <div className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-3 shadow-2xs">
-                  <span className="text-[#78716C] font-medium shrink-0">Metal Purity:</span>
-                  <span className="font-semibold text-[#1A1818] text-right truncate">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 max-w-3xl text-xs w-full max-w-full min-w-0">
+                <div className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-2 shadow-2xs w-full min-w-0">
+                  <span className="text-[#78716C] font-medium shrink-0 text-[11px] sm:text-xs">Metal Purity:</span>
+                  <span className="font-semibold text-[#1A1818] text-right text-[11px] sm:text-xs min-w-0 break-words">
                     {product.purity} (916 BIS Hallmark)
                   </span>
                 </div>
-                <div className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-3 shadow-2xs">
-                  <span className="text-[#78716C] font-medium shrink-0">Gross Weight:</span>
-                  <span className="font-semibold text-[#1A1818] text-right">{product.grossWeight} Grams</span>
+                <div className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-2 shadow-2xs w-full min-w-0">
+                  <span className="text-[#78716C] font-medium shrink-0 text-[11px] sm:text-xs">Gross Weight:</span>
+                  <span className="font-semibold text-[#1A1818] text-right text-[11px] sm:text-xs shrink-0">{product.grossWeight} Grams</span>
                 </div>
-                <div className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-3 shadow-2xs">
-                  <span className="text-[#78716C] font-medium shrink-0">Net Metal Weight:</span>
-                  <span className="font-semibold text-[#1A1818] text-right">{product.netGoldWeight} Grams</span>
+                <div className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-2 shadow-2xs w-full min-w-0">
+                  <span className="text-[#78716C] font-medium shrink-0 text-[11px] sm:text-xs">Net Metal Weight:</span>
+                  <span className="font-semibold text-[#1A1818] text-right text-[11px] sm:text-xs shrink-0">{product.netGoldWeight} Grams</span>
                 </div>
-                <div className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-3 shadow-2xs">
-                  <span className="text-[#78716C] font-medium shrink-0">Stone Details:</span>
-                  <span className="font-semibold text-[#1A1818] text-right truncate">{product.stoneType || 'Plain Gold'}</span>
+                <div className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-2 shadow-2xs w-full min-w-0">
+                  <span className="text-[#78716C] font-medium shrink-0 text-[11px] sm:text-xs">Stone Details:</span>
+                  <span className="font-semibold text-[#1A1818] text-right text-[11px] sm:text-xs min-w-0 break-words">{product.stoneType || 'Plain Gold'}</span>
                 </div>
                 {product.specifications?.map((spec, i) => (
-                  <div key={i} className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-3 shadow-2xs">
-                    <span className="text-[#78716C] font-medium shrink-0">{spec.key}:</span>
-                    <span className="font-semibold text-[#1A1818] text-right truncate">{spec.value}</span>
+                  <div key={i} className="p-3 bg-white rounded-xl border border-[#E8E2D8] flex items-center justify-between gap-2 shadow-2xs w-full min-w-0">
+                    <span className="text-[#78716C] font-medium shrink-0 text-[11px] sm:text-xs">{spec.key}:</span>
+                    <span className="font-semibold text-[#1A1818] text-right text-[11px] sm:text-xs min-w-0 break-words">{spec.value}</span>
                   </div>
                 ))}
               </div>
             )}
 
             {activeTab === 'policies' && (
-              <div className="max-w-3xl text-xs text-[#57534E] space-y-3 leading-relaxed">
+              <div className="max-w-3xl text-xs text-[#57534E] space-y-3 leading-relaxed w-full max-w-full min-w-0 break-words">
                 <p>
                   <strong>100% Exchange Guarantee:</strong> All gold jewellery purchased from Vardhaman Jewellers carries an assured lifetime exchange guarantee across any of our stores in Jalgaon, Dhule, Pune, and Mumbai.
                 </p>
@@ -501,7 +500,7 @@ Please provide availability and viewing slot details.`;
             )}
 
             {activeTab === 'care' && (
-              <div className="max-w-3xl text-xs text-[#57534E] space-y-3 leading-relaxed">
+              <div className="max-w-3xl text-xs text-[#57534E] space-y-3 leading-relaxed w-full max-w-full min-w-0 break-words">
                 <p>• Store individual ornaments separately in velvet pouches to avoid friction scratches.</p>
                 <p>• Avoid direct contact with perfumes, chlorine pools, hairsprays, and harsh cosmetics.</p>
                 <p>• Clean periodically with lukewarm water and a soft-bristled brush, or visit any Vardhaman Jewellers showroom for our complimentary sonic cleaning spa service.</p>
@@ -512,11 +511,11 @@ Please provide availability and viewing slot details.`;
 
         {/* Related Creations */}
         {relatedProducts.length > 0 && (
-          <div className="mt-12 sm:mt-16 pt-8 sm:pt-12 border-t border-[#E8E2D8]">
-            <h2 className="font-serif text-lg sm:text-2xl font-bold text-[#1A1818] mb-6">
+          <div className="mt-10 sm:mt-16 pt-6 sm:pt-12 border-t border-[#E8E2D8] w-full max-w-full min-w-0">
+            <h2 className="font-serif text-lg sm:text-2xl font-bold text-[#1A1818] mb-5 sm:mb-6">
               You May Also Admire
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-6 w-full max-w-full min-w-0">
               {relatedProducts.slice(0, 4).map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
