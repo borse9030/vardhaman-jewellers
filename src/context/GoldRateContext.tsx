@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { GoldRates } from '@/types';
 import { DEFAULT_GOLD_RATES } from '@/services/pricingEngine';
 import {
@@ -58,27 +59,37 @@ export const GoldRateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isLiveModalOpen, setIsLiveModalOpen] = useState<boolean>(false);
   const [isAutoMarketSync, setIsAutoMarketSync] = useState<boolean>(false);
 
+  const pathname = usePathname();
   const prevRatesRef = useRef<GoldRates>(DEFAULT_GOLD_RATES);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitialLoadRef = useRef<boolean>(true);
 
   // Subscribe to real-time updates (BroadcastChannel, LocalStorage, Firestore onSnapshot)
   useEffect(() => {
     const unsubscribe = subscribeToGoldRates((incoming) => {
+      // Ignore initial subscription emission on page load/mount to prevent unwanted toasts
+      if (isInitialLoadRef.current) {
+        isInitialLoadRef.current = false;
+        prevRatesRef.current = incoming;
+        setRates(incoming);
+        setLoading(false);
+        return;
+      }
+
       const prev = prevRatesRef.current;
+      const goldDiff = incoming.rate22K - prev.rate22K;
+      const silverDiff = incoming.rateSilver - prev.rateSilver;
       const hasChanged =
         prev &&
         (prev.rate24K !== incoming.rate24K ||
-          prev.rate22K !== incoming.rate22K ||
+          goldDiff !== 0 ||
           prev.rate18K !== incoming.rate18K ||
-          prev.rateSilver !== incoming.rateSilver);
+          silverDiff !== 0);
 
-      if (hasChanged) {
+      if (hasChanged && (goldDiff !== 0 || silverDiff !== 0)) {
         setPreviousRates({ ...prev });
         setLastChangedTimestamp(Date.now());
         setIsUpdatedRecently(true);
-
-        const goldDiff = incoming.rate22K - prev.rate22K;
-        const silverDiff = incoming.rateSilver - prev.rateSilver;
 
         let diffText = '';
         if (goldDiff !== 0) {
@@ -170,32 +181,32 @@ export const GoldRateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     >
       {children}
 
-      {/* Floating Instant Real-Time Rate Change Toast Banner */}
-      {isUpdatedRecently && recentChangeMessage && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-[#1A1818]/95 backdrop-blur-md text-white p-3.5 rounded-2xl shadow-2xl border border-[#C5A880]/50 animate-in fade-in slide-in-from-bottom-5 duration-300">
+      {/* Floating Instant Real-Time Rate Change Toast Banner: Strictly restricted to /gold-rate and /admin/gold-rates */}
+      {(pathname === '/gold-rate' || pathname === '/admin/gold-rates') && isUpdatedRecently && recentChangeMessage && (
+        <div className="fixed bottom-20 sm:bottom-6 right-3 sm:right-6 z-50 max-w-sm w-[calc(100vw-1.5rem)] sm:w-auto bg-[#1A1818]/95 backdrop-blur-md text-white p-3.5 rounded-2xl shadow-2xl border border-[#C5A880]/50 animate-in fade-in slide-in-from-bottom-5 duration-300">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 min-w-0">
               <span className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shrink-0 animate-pulse">
                 <Zap className="w-4 h-4 fill-emerald-400" />
               </span>
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#DFCDAE]">
                     Live Bullion Rate Changed
                   </span>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
                 </div>
-                <p className="text-xs font-semibold text-white mt-0.5">
+                <p className="text-xs font-semibold text-white mt-0.5 truncate">
                   {recentChangeMessage}
                 </p>
                 <p className="text-[10px] text-[#A8A29E] mt-0.5">
-                  All jewellery product prices recalculated instantly.
+                  Live bullion benchmark updated.
                 </p>
               </div>
             </div>
             <button
               onClick={() => setIsUpdatedRecently(false)}
-              className="text-[#A8A29E] hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
+              className="text-[#A8A29E] hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors shrink-0"
               aria-label="Close notification"
             >
               <X className="w-3.5 h-3.5" />
