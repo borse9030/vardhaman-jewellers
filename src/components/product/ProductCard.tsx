@@ -1,9 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, ShoppingBag, MessageCircle, Eye, ShieldCheck } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Heart,
+  ShoppingBag,
+  MessageCircle,
+  Eye,
+  ShieldCheck,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { Product } from '@/types';
 import { useGoldRates } from '@/context/GoldRateContext';
 import { useCart } from '@/context/CartContext';
@@ -15,21 +24,174 @@ interface ProductCardProps {
   product: Product;
 }
 
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? '100%' : direction < 0 ? '-100%' : 0,
+    opacity: 0.3,
+    scale: 0.98,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+    transition: {
+      x: { type: 'spring' as const, stiffness: 340, damping: 32, mass: 0.75 },
+      opacity: { duration: 0.2 },
+      scale: { duration: 0.2 },
+    },
+  },
+  exit: (direction: number) => ({
+    x: direction > 0 ? '-100%' : '100%',
+    opacity: 0.3,
+    scale: 0.98,
+    transition: {
+      x: { type: 'spring' as const, stiffness: 340, damping: 32, mass: 0.75 },
+      opacity: { duration: 0.2 },
+      scale: { duration: 0.2 },
+    },
+  }),
+};
+
 export default function ProductCard({ product }: ProductCardProps) {
   const { rates, isUpdatedRecently } = useGoldRates();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
-  const [isHovered, setIsHovered] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [slideDirection, setSlideDirection] = useState(0);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
   const priceBreakdown = calculateProductPrice(product, rates);
   const isWishlisted = isInWishlist(product.id);
 
-  const primaryImage = product.images[0] || product.thumbnail || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80';
-  const secondaryImage = product.images[1] || primaryImage;
+  // Extract all available product images
+  const images: string[] =
+    product.images && product.images.length > 0
+      ? product.images
+      : product.thumbnail
+      ? [product.thumbnail]
+      : ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80'];
 
-  // WhatsApp Enquiry Generator (Consistent across SSR and client hydration)
+  const nextImage = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (images.length <= 1) return;
+    setSlideDirection(1);
+    setActiveImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (images.length <= 1) return;
+    setSlideDirection(-1);
+    setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  // Touch & pointer swipe tracking
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const isSwiping = useRef(false);
+  const hasSwiped = useRef(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStartX.current = t.clientX;
+    touchStartY.current = t.clientY;
+    isSwiping.current = false;
+    hasSwiped.current = false;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const t = e.touches[0];
+    const dx = t.clientX - touchStartX.current;
+    const dy = t.clientY - touchStartY.current;
+
+    // Detect intentional horizontal drag
+    if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+      isSwiping.current = true;
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStartX.current;
+    const dy = t.clientY - (touchStartY.current || 0);
+
+    const SWIPE_THRESHOLD = 30;
+    if (Math.abs(dx) >= SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy) && images.length > 1) {
+      hasSwiped.current = true;
+      if (dx < 0) {
+        nextImage();
+      } else {
+        prevImage();
+      }
+    }
+
+    touchStartX.current = null;
+    touchStartY.current = null;
+    setTimeout(() => {
+      isSwiping.current = false;
+      hasSwiped.current = false;
+    }, 220);
+  };
+
+  // Mouse drag support for desktop
+  const mouseStartX = useRef<number | null>(null);
+  const isMouseDown = useRef(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return; // Only primary button
+    mouseStartX.current = e.clientX;
+    isMouseDown.current = true;
+    hasSwiped.current = false;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isMouseDown.current || mouseStartX.current === null) return;
+    const dx = e.clientX - mouseStartX.current;
+    if (Math.abs(dx) > 10) {
+      isSwiping.current = true;
+    }
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!isMouseDown.current || mouseStartX.current === null) return;
+    const dx = e.clientX - mouseStartX.current;
+    const SWIPE_THRESHOLD = 30;
+
+    if (Math.abs(dx) >= SWIPE_THRESHOLD && images.length > 1) {
+      hasSwiped.current = true;
+      if (dx < 0) {
+        nextImage();
+      } else {
+        prevImage();
+      }
+    }
+
+    isMouseDown.current = false;
+    mouseStartX.current = null;
+    setTimeout(() => {
+      isSwiping.current = false;
+      hasSwiped.current = false;
+    }, 220);
+  };
+
+  const handleLinkClick = (e: React.MouseEvent) => {
+    // If a swipe gesture just occurred, block the link navigation
+    if (hasSwiped.current || isSwiping.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  // WhatsApp Enquiry Generator
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://vardhamanjewellers.in';
   const productUrl = `${siteUrl}/product/${product.slug}`;
   const whatsappMsg = `Hello Vardhaman Jewellers, I am interested in:
@@ -44,7 +206,8 @@ Please share more details with me.`;
 
   const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    const currentOrigin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : siteUrl;
+    const currentOrigin =
+      typeof window !== 'undefined' && window.location.origin ? window.location.origin : siteUrl;
     const dynamicProductUrl = `${currentOrigin}/product/${product.slug}`;
     const dynamicMsg = `Hello Vardhaman Jewellers, I am interested in:
 Product: ${product.name}
@@ -59,20 +222,16 @@ Please share more details with me.`;
 
   return (
     <>
-      <div
-        className="group relative flex flex-col bg-white rounded-xl border border-[#E8E2D8] overflow-hidden luxury-card-shadow transition-all duration-300"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
+      <div className="group relative flex flex-col bg-white rounded-xl border border-[#E8E2D8] overflow-hidden luxury-card-shadow transition-all duration-300">
         {/* Badges Bar */}
-        <div className="absolute top-1.5 sm:top-2.5 left-1.5 sm:left-2.5 z-10 flex flex-col gap-1 items-start">
+        <div className="absolute top-1.5 sm:top-2.5 left-1.5 sm:left-2.5 z-20 flex flex-col gap-1 items-start pointer-events-none">
           {product.bestSeller && (
-            <span className="px-1.5 sm:px-2 py-0.5 rounded-sm bg-[#581825] text-white text-[9px] sm:text-[10px] font-bold tracking-wider uppercase">
+            <span className="px-1.5 sm:px-2 py-0.5 rounded-sm bg-[#581825] text-white text-[9px] sm:text-[10px] font-bold tracking-wider uppercase shadow-xs">
               Bestseller
             </span>
           )}
           {product.newArrival && (
-            <span className="px-1.5 sm:px-2 py-0.5 rounded-sm bg-[#C5A880] text-[#380B12] text-[9px] sm:text-[10px] font-bold tracking-wider uppercase">
+            <span className="px-1.5 sm:px-2 py-0.5 rounded-sm bg-[#C5A880] text-[#380B12] text-[9px] sm:text-[10px] font-bold tracking-wider uppercase shadow-xs">
               New
             </span>
           )}
@@ -88,47 +247,135 @@ Please share more details with me.`;
         <button
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             toggleWishlist(product);
           }}
-          className="absolute top-1.5 sm:top-2.5 right-1.5 sm:right-2.5 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#581825] hover:bg-[#581825] hover:text-white transition-all shadow-xs"
+          className="absolute top-1.5 sm:top-2.5 right-1.5 sm:right-2.5 z-30 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#581825] hover:bg-[#581825] hover:text-white transition-all shadow-xs"
           title={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
           aria-label="Wishlist"
         >
-          <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isWishlisted ? 'fill-[#581825] text-[#581825] group-hover:fill-white' : ''}`} />
+          <Heart
+            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
+              isWishlisted ? 'fill-[#581825] text-[#581825] group-hover:fill-white' : ''
+            }`}
+          />
         </button>
 
-        {/* Image Display with Secondary Image Hover */}
-        <Link href={`/product/${product.slug}`} className="relative aspect-square w-full bg-[#FAF7F2] overflow-hidden block">
-          <Image
-            src={isHovered ? secondaryImage : primaryImage}
-            alt={product.name}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-            loading="lazy"
-          />
+        {/* Interactive Swipable Image Container */}
+        <div
+          className="relative aspect-square w-full bg-[#FAF7F2] overflow-hidden select-none touch-pan-y"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        >
+          <Link
+            href={`/product/${product.slug}`}
+            onClick={handleLinkClick}
+            className="relative block w-full h-full overflow-hidden"
+            draggable={false}
+          >
+            <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
+              <motion.div
+                key={activeImageIndex}
+                custom={slideDirection}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="absolute inset-0 w-full h-full"
+              >
+                <Image
+                  src={images[activeImageIndex] || product.thumbnail}
+                  alt={`${product.name} - view ${activeImageIndex + 1}`}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105 pointer-events-none select-none"
+                  loading={activeImageIndex === 0 ? 'eager' : 'lazy'}
+                  draggable={false}
+                />
+              </motion.div>
+            </AnimatePresence>
 
-          {/* Quick View Button overlay on hover (Desktop only) */}
-          <div className="hidden sm:flex absolute inset-x-0 bottom-3 justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                setIsQuickViewOpen(true);
-              }}
-              className="bg-white/95 text-[#380B12] hover:bg-[#581825] hover:text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-md flex items-center gap-1.5 transition-colors"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              Quick View
-            </button>
-          </div>
-        </Link>
+            {/* Quick View Button overlay on hover (Desktop only) */}
+            <div className="hidden sm:flex absolute inset-x-0 bottom-4 justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 pointer-events-none">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsQuickViewOpen(true);
+                }}
+                className="pointer-events-auto bg-white/95 text-[#380B12] hover:bg-[#581825] hover:text-white px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-md flex items-center gap-1.5 transition-colors"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Quick View
+              </button>
+            </div>
+          </Link>
+
+          {/* Desktop Hover Chevron Buttons for smooth image switching */}
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={prevImage}
+                className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white/90 backdrop-blur-xs text-[#380B12] hover:bg-[#581825] hover:text-white items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-md hover:scale-110"
+                title="Previous photo"
+                aria-label="Previous photo"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={nextImage}
+                className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white/90 backdrop-blur-xs text-[#380B12] hover:bg-[#581825] hover:text-white items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-md hover:scale-110"
+                title="Next photo"
+                aria-label="Next photo"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </>
+          )}
+
+          {/* Pagination Indicators / Dots */}
+          {images.length > 1 && (
+            <div className="absolute bottom-2 inset-x-0 z-20 flex items-center justify-center gap-1.5 pointer-events-none">
+              {images.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSlideDirection(idx > activeImageIndex ? 1 : -1);
+                    setActiveImageIndex(idx);
+                  }}
+                  className={`pointer-events-auto transition-all duration-300 rounded-full h-1.5 ${
+                    idx === activeImageIndex
+                      ? 'w-4 bg-[#581825] shadow-sm'
+                      : 'w-1.5 bg-black/25 hover:bg-black/50 backdrop-blur-xs'
+                  }`}
+                  aria-label={`Slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Mobile Image Counter Badge */}
+          {images.length > 1 && (
+            <div className="sm:hidden absolute top-2 right-10 z-20 px-1.5 py-0.5 rounded-full bg-black/40 backdrop-blur-xs text-white text-[9px] font-semibold tracking-wider pointer-events-none">
+              {activeImageIndex + 1}/{images.length}
+            </div>
+          )}
+        </div>
 
         {/* Details Content */}
         <div className="p-2 sm:p-3.5 flex flex-col flex-1 justify-between bg-white">
           <div>
             {/* Metal & Weight Chips */}
             <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-[#78716C] mb-1">
-              <span>{product.purity} • {product.metalType}</span>
+              <span>
+                {product.purity} • {product.metalType}
+              </span>
               <span className="font-medium text-[#2B2625]">{product.grossWeight}g</span>
             </div>
 

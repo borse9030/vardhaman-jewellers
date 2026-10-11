@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { X, ShoppingBag, Heart, MessageCircle, ShieldCheck, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, ShoppingBag, Heart, MessageCircle, ShieldCheck, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Product } from '@/types';
 import { useGoldRates } from '@/context/GoldRateContext';
 import { useCart } from '@/context/CartContext';
@@ -27,6 +28,83 @@ export default function QuickViewModal({ product, onClose }: QuickViewModalProps
   const isWishlisted = isInWishlist(product.id);
 
   const images = product.images.length > 0 ? product.images : [product.thumbnail];
+
+  const [slideDirection, setSlideDirection] = useState(0);
+
+  const nextImage = () => {
+    if (images.length <= 1) return;
+    setSlideDirection(1);
+    setActiveImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    if (images.length <= 1) return;
+    setSlideDirection(-1);
+    setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - (touchStartY.current || 0);
+    if (Math.abs(dx) >= 30 && Math.abs(dx) > Math.abs(dy) && images.length > 1) {
+      if (dx < 0) nextImage();
+      else prevImage();
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
+  const mouseStartX = useRef<number | null>(null);
+  const isMouseDown = useRef(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    mouseStartX.current = e.clientX;
+    isMouseDown.current = true;
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!isMouseDown.current || mouseStartX.current === null) return;
+    const dx = e.clientX - mouseStartX.current;
+    if (Math.abs(dx) >= 30 && images.length > 1) {
+      if (dx < 0) nextImage();
+      else prevImage();
+    }
+    isMouseDown.current = false;
+    mouseStartX.current = null;
+  };
+
+  const slideVariants = {
+    enter: (dir: number) => ({
+      x: dir > 0 ? '100%' : dir < 0 ? '-100%' : 0,
+      opacity: 0.3,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        x: { type: 'spring' as const, stiffness: 340, damping: 30, mass: 0.8 },
+        opacity: { duration: 0.2 },
+      },
+    },
+    exit: (dir: number) => ({
+      x: dir > 0 ? '-100%' : '100%',
+      opacity: 0.3,
+      transition: {
+        x: { type: 'spring' as const, stiffness: 340, damping: 30, mass: 0.8 },
+        opacity: { duration: 0.2 },
+      },
+    }),
+  };
 
   const handleAdd = () => {
     addToCart(product, quantity);
@@ -65,26 +143,93 @@ Link: ${currentOrigin}/product/${product.slug}`;
           <X className="w-5 h-5" />
         </button>
 
-        {/* Left: Product Images */}
-        <div className="md:w-1/2 bg-[#FAF7F2] p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r border-[#E8E2D8]">
-          <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-white border border-[#E8E2D8]">
-            <Image
-              src={images[activeImageIndex] || product.thumbnail}
-              alt={product.name}
-              fill
-              className="object-cover"
-            />
+        {/* Left: Product Images with Swipe Animation */}
+        <div className="md:w-1/2 bg-[#FAF7F2] p-4 sm:p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r border-[#E8E2D8]">
+          <div
+            className="group relative aspect-square w-full rounded-xl overflow-hidden bg-white border border-[#E8E2D8] select-none touch-pan-y"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+          >
+            <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
+              <motion.div
+                key={activeImageIndex}
+                custom={slideDirection}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="absolute inset-0 w-full h-full"
+              >
+                <Image
+                  src={images[activeImageIndex] || product.thumbnail}
+                  alt={product.name}
+                  fill
+                  className="object-cover pointer-events-none select-none"
+                  draggable={false}
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Left & Right Chevrons */}
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prevImage();
+                  }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs text-[#380B12] hover:bg-[#581825] hover:text-white flex items-center justify-center transition-all shadow-md hover:scale-105"
+                  title="Previous image"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nextImage();
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs text-[#380B12] hover:bg-[#581825] hover:text-white flex items-center justify-center transition-all shadow-md hover:scale-105"
+                  title="Next image"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+
+                {/* Pagination Dots */}
+                <div className="absolute bottom-2.5 inset-x-0 z-20 flex items-center justify-center gap-1.5 pointer-events-none">
+                  {images.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setSlideDirection(idx > activeImageIndex ? 1 : -1);
+                        setActiveImageIndex(idx);
+                      }}
+                      className={`pointer-events-auto transition-all duration-300 rounded-full h-1.5 ${
+                        activeImageIndex === idx ? 'w-4 bg-[#581825]' : 'w-1.5 bg-black/30 hover:bg-black/50'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Thumbnail row */}
           {images.length > 1 && (
-            <div className="flex gap-2 mt-4 overflow-x-auto pb-1">
+            <div className="flex gap-2 mt-4 overflow-x-auto pb-1 no-scrollbar">
               {images.map((img, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setActiveImageIndex(idx)}
-                  className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
-                    activeImageIndex === idx ? 'border-[#581825]' : 'border-transparent opacity-70 hover:opacity-100'
+                  onClick={() => {
+                    setSlideDirection(idx > activeImageIndex ? 1 : -1);
+                    setActiveImageIndex(idx);
+                  }}
+                  className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 shrink-0 transition-all ${
+                    activeImageIndex === idx ? 'border-[#581825] ring-2 ring-[#581825]/20' : 'border-transparent opacity-70 hover:opacity-100'
                   }`}
                 >
                   <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" />

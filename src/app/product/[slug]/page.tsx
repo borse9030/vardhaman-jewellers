@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, use, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart,
   ShoppingBag,
@@ -15,6 +16,7 @@ import {
   Truck,
   CheckCircle2,
   ChevronRight,
+  ChevronLeft,
   Sparkles,
   Info,
   Share2,
@@ -47,9 +49,15 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
   });
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [slideDirection, setSlideDirection] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'specs' | 'policies' | 'care'>('specs');
   const [isCopied, setIsCopied] = useState(false);
+
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const mouseStartX = useRef<number | null>(null);
+  const isMouseDown = useRef(false);
 
   useEffect(() => {
     getProductBySlug(slug).then((p) => setProductState(p));
@@ -107,6 +115,75 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
     }
   };
 
+  const nextImage = () => {
+    if (gallery.length <= 1) return;
+    setSlideDirection(1);
+    setSelectedImageIndex((prev) => (prev + 1) % gallery.length);
+  };
+
+  const prevImage = () => {
+    if (gallery.length <= 1) return;
+    setSlideDirection(-1);
+    setSelectedImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - (touchStartY.current || 0);
+    if (Math.abs(dx) >= 30 && Math.abs(dx) > Math.abs(dy) && gallery.length > 1) {
+      if (dx < 0) nextImage();
+      else prevImage();
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    mouseStartX.current = e.clientX;
+    isMouseDown.current = true;
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!isMouseDown.current || mouseStartX.current === null) return;
+    const dx = e.clientX - mouseStartX.current;
+    if (Math.abs(dx) >= 30 && gallery.length > 1) {
+      if (dx < 0) nextImage();
+      else prevImage();
+    }
+    isMouseDown.current = false;
+    mouseStartX.current = null;
+  };
+
+  const slideVariants = {
+    enter: (dir: number) => ({
+      x: dir > 0 ? '100%' : dir < 0 ? '-100%' : 0,
+      opacity: 0.3,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        x: { type: 'spring' as const, stiffness: 340, damping: 30, mass: 0.8 },
+        opacity: { duration: 0.2 },
+      },
+    },
+    exit: (dir: number) => ({
+      x: dir > 0 ? '-100%' : '100%',
+      opacity: 0.3,
+      transition: {
+        x: { type: 'spring' as const, stiffness: 340, damping: 30, mass: 0.8 },
+        opacity: { duration: 0.2 },
+      },
+    }),
+  };
+
   // WhatsApp Enquiry Link (Consistent across SSR and client hydration)
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://vardhamanjewellers.in';
   const productUrl = `${siteUrl}/product/${product.slug}`;
@@ -153,21 +230,40 @@ Please provide availability and viewing slot details.`;
 
         {/* Main PDP Grid (Left Gallery, Right Product Info & Price Breakdown) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 w-full max-w-full min-w-0">
-          {/* LEFT: Image Gallery */}
+          {/* LEFT: Swipable Image Gallery */}
           <div className="lg:col-span-7 space-y-4 w-full max-w-full min-w-0">
-            <div className="relative aspect-square w-full max-w-full rounded-2xl overflow-hidden bg-white border border-[#E8E2D8] shadow-sm">
-              <Image
-                src={gallery[selectedImageIndex] || product.thumbnail}
-                alt={product.name}
-                fill
-                priority
-                className="object-cover transition-transform duration-500 hover:scale-105 cursor-zoom-in"
-              />
+            <div
+              className="group relative aspect-square w-full max-w-full rounded-2xl overflow-hidden bg-white border border-[#E8E2D8] shadow-sm select-none touch-pan-y"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
+            >
+              <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
+                <motion.div
+                  key={selectedImageIndex}
+                  custom={slideDirection}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  className="absolute inset-0 w-full h-full"
+                >
+                  <Image
+                    src={gallery[selectedImageIndex] || product.thumbnail}
+                    alt={`${product.name} - view ${selectedImageIndex + 1}`}
+                    fill
+                    priority
+                    className="object-cover transition-transform duration-500 hover:scale-105 pointer-events-none select-none"
+                    draggable={false}
+                  />
+                </motion.div>
+              </AnimatePresence>
 
               {/* Badges */}
-              <div className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 flex flex-col gap-1.5 z-10">
+              <div className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 flex flex-col gap-1.5 z-20 pointer-events-none">
                 {product.bestSeller && (
-                  <span className="px-2.5 py-1 rounded bg-[#581825] text-white text-[10px] font-bold uppercase tracking-wider">
+                  <span className="px-2.5 py-1 rounded bg-[#581825] text-white text-[10px] font-bold uppercase tracking-wider shadow-xs">
                     Bestseller
                   </span>
                 )}
@@ -180,15 +276,67 @@ Please provide availability and viewing slot details.`;
               {/* Share button */}
               <button
                 onClick={handleShare}
-                className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-[#581825] hover:text-white flex items-center justify-center text-[#581825] shadow-sm transition-colors"
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-[#581825] hover:text-white flex items-center justify-center text-[#581825] shadow-sm transition-colors"
                 title="Share link"
               >
                 <Share2 className="w-4 h-4" />
               </button>
               {isCopied && (
-                <div className="absolute top-14 right-3 z-10 bg-black/80 text-white text-[10px] px-2 py-1 rounded">
+                <div className="absolute top-14 right-3 z-20 bg-black/80 text-white text-[10px] px-2 py-1 rounded">
                   Link copied!
                 </div>
+              )}
+
+              {/* Prev / Next Chevrons */}
+              {gallery.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevImage();
+                    }}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs text-[#380B12] hover:bg-[#581825] hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-md hover:scale-110"
+                    title="Previous photo"
+                    aria-label="Previous photo"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextImage();
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-xs text-[#380B12] hover:bg-[#581825] hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-md hover:scale-110"
+                    title="Next photo"
+                    aria-label="Next photo"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+
+                  {/* Pagination Dots indicator */}
+                  <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-1.5 pointer-events-none">
+                    {gallery.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setSlideDirection(idx > selectedImageIndex ? 1 : -1);
+                          setSelectedImageIndex(idx);
+                        }}
+                        className={`pointer-events-auto transition-all duration-300 rounded-full h-1.5 ${
+                          selectedImageIndex === idx
+                            ? 'w-5 bg-[#581825] shadow-sm'
+                            : 'w-1.5 bg-black/25 hover:bg-black/50 backdrop-blur-xs'
+                        }`}
+                        aria-label={`Slide ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Mobile Counter */}
+                  <div className="sm:hidden absolute top-3.5 right-12 z-20 px-2 py-0.5 rounded-full bg-black/45 backdrop-blur-xs text-white text-[10px] font-semibold tracking-wider pointer-events-none">
+                    {selectedImageIndex + 1}/{gallery.length}
+                  </div>
+                </>
               )}
             </div>
 
@@ -198,9 +346,14 @@ Please provide availability and viewing slot details.`;
                 {gallery.map((img, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setSelectedImageIndex(idx)}
+                    onClick={() => {
+                      setSlideDirection(idx > selectedImageIndex ? 1 : -1);
+                      setSelectedImageIndex(idx);
+                    }}
                     className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
-                      selectedImageIndex === idx ? 'border-[#581825] shadow-xs' : 'border-transparent opacity-70 hover:opacity-100'
+                      selectedImageIndex === idx
+                        ? 'border-[#581825] shadow-xs ring-2 ring-[#581825]/20 scale-102'
+                        : 'border-transparent opacity-70 hover:opacity-100'
                     }`}
                   >
                     <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" />
