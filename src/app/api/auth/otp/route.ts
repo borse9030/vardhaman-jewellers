@@ -83,8 +83,6 @@ export async function POST(request: Request) {
         message: `Verification code sent to ${formattedDisplay} via SMS.`,
         phone: cleanPhone,
         formattedPhone: formattedDisplay,
-        // In dev / testing, provide otp preview so user can test instantly with generated or 123456
-        otpPreview: generatedOtp,
         expiresIn: 300,
       });
     }
@@ -102,12 +100,12 @@ export async function POST(request: Request) {
       const record = otpStore.get(cleanPhone);
       const submittedOtp = otp.trim();
 
-      // Check against stored OTP or accepted universal demo code 123456
-      const isValidOtp = (record && record.code === submittedOtp) || submittedOtp === '123456';
+      // Check against securely stored cryptographic OTP
+      const isValidOtp = Boolean(record && record.code === submittedOtp);
 
       if (!isValidOtp) {
         return NextResponse.json(
-          { success: false, message: 'Invalid or expired OTP code. Please try again or request a new one.' },
+          { success: false, message: 'Invalid or expired OTP code. Please enter the 6-digit code received on your phone.' },
           { status: 401 }
         );
       }

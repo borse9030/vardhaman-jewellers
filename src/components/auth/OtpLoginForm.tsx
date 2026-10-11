@@ -19,7 +19,6 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { auth } from '@/lib/firebase/config';
 import { RecaptchaVerifier } from 'firebase/auth';
-import { isAuthorizedOwner } from '@/config/ownerAccess';
 
 interface OtpLoginFormProps {
   redirectAfterLogin?: string;
@@ -33,9 +32,6 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
     verifyOtp,
     isAdminLoggedIn,
     customer,
-    logoutCustomer,
-    loginWithTrustedDevice,
-    isTrustedDevice,
   } = useAuth();
 
   // Step 1: 'phone' | Step 2: 'otp'
@@ -52,76 +48,56 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
 
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // If already authenticated in admin, redirect immediately
+  // If already authenticated, redirect directly into the website
   useEffect(() => {
     if (isAdminLoggedIn) {
-      router.push(redirectAfterLogin || '/admin');
+      router.replace(redirectAfterLogin || '/admin');
+    } else if (customer && sourceContext !== 'admin') {
+      router.replace(redirectAfterLogin || '/profile');
     }
-  }, [isAdminLoggedIn, router, redirectAfterLogin]);
+  }, [isAdminLoggedIn, customer, sourceContext, router, redirectAfterLogin]);
 
-  // SMART OTP REDUCTION: If user is already authenticated on the storefront, show active session banner
+  // If user is already authenticated on the storefront, render redirecting screen
   if (customer && sourceContext !== 'admin') {
     return (
-      <div className="w-full max-w-md mx-auto">
-        <div className="text-center mb-6 sm:mb-8">
-          <Link href="/" className="inline-block group" aria-label="Return to Store">
-            <Image
-              src="/logo-gold.png"
-              alt="Vardhaman Jewellers"
-              width={240}
-              height={75}
-              priority
-              className="h-14 sm:h-16 w-auto object-contain mx-auto transition-transform group-hover:scale-105"
-            />
-          </Link>
-          <p className="text-[11px] uppercase tracking-[0.25em] text-[#9A7B4F] font-semibold mt-2.5">
-            Heritage Gold &amp; Diamond Jewellery
-          </p>
+      <div className="w-full max-w-md mx-auto text-center py-10">
+        <div className="w-16 h-16 rounded-full bg-[#FAF7F2] border-2 border-[#C5A880] mx-auto flex items-center justify-center font-serif text-xl font-bold text-[#581825] mb-4 shadow-sm animate-pulse">
+          {customer.name?.[0]?.toUpperCase() || 'V'}
         </div>
+        <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
+          ✓ Active Authenticated Session
+        </span>
+        <h2 className="font-serif text-xl font-bold text-[#1A1818] mb-1">
+          Welcome back, {customer.name}!
+        </h2>
+        <p className="text-xs text-[#78716C] mb-4">
+          You are already signed in. Opening your account...
+        </p>
+        <div className="w-36 h-1 bg-[#E8E2D8] rounded-full mx-auto overflow-hidden">
+          <div className="w-full h-full bg-[#581825] animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
 
-        <div className="bg-white rounded-3xl border border-[#E8E2D8] shadow-xl p-6 sm:p-8 text-center relative overflow-hidden backdrop-blur-xs">
-          <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-[#C5A880] via-[#581825] to-[#C5A880]"></div>
-
-          <div className="w-16 h-16 rounded-full bg-[#FAF7F2] border-2 border-[#C5A880] mx-auto flex items-center justify-center font-serif text-xl font-bold text-[#581825] mb-4 shadow-xs">
-            {customer.name?.[0]?.toUpperCase() || 'V'}
-          </div>
-
-          <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
-            ✓ Active Authenticated Session
-          </span>
-
-          <h2 className="font-serif text-xl font-bold text-[#1A1818] mb-1">
-            Welcome back, {customer.name}!
-          </h2>
-
-          <p className="text-xs text-[#78716C] mb-6">
-            You are securely signed in as <strong className="text-[#1A1818]">{customer.phone || customer.email || 'Store Patron'}</strong>. Your session is active and no OTP verification is required.
-          </p>
-
-          <div className="flex flex-col gap-2.5">
-            <Link
-              href={redirectAfterLogin || '/profile'}
-              className="w-full py-3.5 rounded-xl bg-[#581825] hover:bg-[#380B12] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Continue to Account &amp; Orders</span>
-              <ArrowRight className="w-4 h-4 text-[#C5A880]" />
-            </Link>
-
-            <Link
-              href="/shop"
-              className="w-full py-2.5 rounded-xl border border-[#E8E2D8] hover:border-[#C5A880] text-[#57534E] text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
-            >
-              <span>Explore Jewellery Catalogue</span>
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => logoutCustomer()}
-              className="w-full py-2 text-[11px] text-[#A8A29E] hover:text-red-700 font-medium transition-colors cursor-pointer mt-1"
-            >
-              Sign In with a different mobile number
-            </button>
-          </div>
+  // If admin is already authenticated, render redirecting screen
+  if (isAdminLoggedIn) {
+    return (
+      <div className="w-full max-w-md mx-auto text-center py-10">
+        <div className="w-16 h-16 rounded-full bg-[#581825]/10 border-2 border-[#581825] mx-auto flex items-center justify-center font-serif text-xl font-bold text-[#581825] mb-4 shadow-sm animate-pulse">
+          A
+        </div>
+        <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200 mb-2">
+          ✓ Administrator Session Active
+        </span>
+        <h2 className="font-serif text-xl font-bold text-[#1A1818] mb-1">
+          Store Administration
+        </h2>
+        <p className="text-xs text-[#78716C] mb-4">
+          You are already authenticated. Opening Admin Dashboard...
+        </p>
+        <div className="w-36 h-1 bg-[#E8E2D8] rounded-full mx-auto overflow-hidden">
+          <div className="w-full h-full bg-[#581825] animate-pulse"></div>
         </div>
       </div>
     );
@@ -217,7 +193,7 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
       return;
     }
 
-    if (!captchaSolved && !isAuthorizedOwner(phone)) {
+    if (!captchaSolved) {
       setError('Please check the "I\'m not a robot" security check box below before continuing.');
       return;
     }
@@ -309,13 +285,6 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
     if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
       otpInputRefs.current[index - 1]?.focus();
     }
-  };
-
-  // Auto-fill demo OTP code
-  const fillDemoOtp = (code: string) => {
-    const parts = code.split('').slice(0, 6);
-    setOtpDigits(parts);
-    setError('');
   };
 
   // Step 2 Submit: Verify OTP
@@ -423,7 +392,7 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
                     <strong>Option 1 (Instant Real SMS):</strong> Enter a different mobile number (e.g. a colleague or family phone) to receive a real SMS immediately.
                   </li>
                   <li>
-                    <strong>Option 2 (Instant Test Bypass):</strong> In <a href="https://console.firebase.google.com/u/0/project/vardhaman-jewellers-fe381/authentication/providers" target="_blank" rel="noreferrer" className="underline font-bold text-red-900">Firebase Console &gt; Phone &gt; "Phone numbers for testing" ↗</a>, add <code>+91 7972565911</code> with code <code>123456</code> to bypass limits completely.
+                    <strong>Option 2:</strong> Wait a few minutes or add your testing number in Firebase Console &gt; Authentication &gt; Phone numbers for testing.
                   </li>
                   <li>
                     <strong>Option 3 (Cooldown):</strong> Wait 15–30 minutes for Google to automatically lift the cooldown on this number.
@@ -439,43 +408,6 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
           <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 animate-in fade-in">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>{successMsg}</span>
-          </div>
-        )}
-
-        {/* One-Click Store Head Quick Access for Admin */}
-        {sourceContext === 'admin' && step === 'phone' && (
-          <div className="mb-5 p-4 rounded-2xl bg-[#581825]/5 border border-[#581825]/20 flex flex-col gap-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-[#581825] uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-                Store Head Express Entry
-              </span>
-              <span className="text-[10px] text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full font-bold">
-                Bhave (MD)
-              </span>
-            </div>
-            <button
-              type="button"
-              id="admin-express-login-btn"
-              onClick={async () => {
-                setLoading(true);
-                setError('');
-                const res = await verifyOtp('7972565911', '123456');
-                setLoading(false);
-                if (res.success) {
-                  router.push(redirectAfterLogin || '/admin');
-                } else {
-                  setError(res.message || 'Owner authentication failed.');
-                }
-              }}
-              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#581825] to-[#782333] hover:from-[#782333] hover:to-[#581825] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Instant Sign In as Store Owner (7972565911)</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#C5A880]" />
-            </button>
-            <p className="text-[10px] text-[#78716C] text-center">
-              Direct access for authorized owner Bhave with administrative role.
-            </p>
           </div>
         )}
 
@@ -510,76 +442,29 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
               </p>
             </div>
 
-            {/* Trusted Device Instant Bypass (Zero OTP, Zero SMS Cost) */}
-            {phone.length === 10 && isTrustedDevice(phone) && (
-              <div className="my-3 p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 flex flex-col gap-2.5 animate-in fade-in">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="font-bold text-xs">Device Verified &amp; Recognized</span>
-                  </div>
-                  <span className="text-[10px] bg-emerald-200/80 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
-                    Zero OTP
-                  </span>
-                </div>
-                <p className="text-[11px] text-emerald-800 leading-relaxed">
-                  This device was previously verified for this number. Sign in immediately without sending an SMS OTP code.
-                </p>
-                <button
-                  type="button"
-                  id="trusted-device-login-btn"
-                  onClick={async () => {
-                    setLoading(true);
-                    setError('');
-                    const res = await loginWithTrustedDevice(phone);
-                    setLoading(false);
-                    if (res.success) {
-                      router.push(redirectAfterLogin || '/profile');
-                    } else {
-                      setError(res.message || 'Could not verify device.');
-                    }
-                  }}
-                  className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-800 hover:from-emerald-800 hover:to-emerald-900 text-white font-bold text-xs transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
-                  <span>Instant 1-Click Sign In (No SMS Needed)</span>
-                </button>
-              </div>
-            )}
-
             {/* Google reCAPTCHA Security Verification */}
-            {!isAuthorizedOwner(phone) ? (
-              <div className={`flex flex-col items-center justify-center my-3 p-3.5 rounded-2xl transition-all ${
-                !captchaSolved && phone.length === 10
-                  ? 'bg-[#FAF4ED] border-2 border-[#C5A880] ring-4 ring-[#C5A880]/15'
-                  : 'bg-[#FAF7F2] border border-[#E8E2D8]'
-              }`}>
-                <div className="flex items-center gap-1.5 mb-2.5 text-[11px] font-semibold text-[#44403C]">
-                  <ShieldCheck className={`w-4 h-4 ${captchaSolved ? 'text-emerald-600' : 'text-[#9A7B4F]'}`} />
-                  <span>
-                    {captchaSolved
-                      ? 'Security verification complete'
-                      : 'Security Check: Check "I\'m not a robot" below'}
-                  </span>
-                </div>
-                <div id="recaptcha-container" className="min-h-[78px] flex items-center justify-center"></div>
+            <div className={`flex flex-col items-center justify-center my-3 p-3.5 rounded-2xl transition-all ${
+              !captchaSolved && phone.length === 10
+                ? 'bg-[#FAF4ED] border-2 border-[#C5A880] ring-4 ring-[#C5A880]/15'
+                : 'bg-[#FAF7F2] border border-[#E8E2D8]'
+            }`}>
+              <div className="flex items-center gap-1.5 mb-2.5 text-[11px] font-semibold text-[#44403C]">
+                <ShieldCheck className={`w-4 h-4 ${captchaSolved ? 'text-emerald-600' : 'text-[#9A7B4F]'}`} />
+                <span>
+                  {captchaSolved
+                    ? 'Security verification complete'
+                    : 'Security Check: Check "I\'m not a robot" below'}
+                </span>
               </div>
-            ) : (
-              <div className="my-3 p-3.5 rounded-2xl bg-amber-50/80 border border-amber-300 text-amber-900 flex items-center gap-2.5">
-                <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0" />
-                <div>
-                  <span className="font-bold text-xs block">Authorized Store Head &amp; Owner</span>
-                  <span className="text-[11px] text-amber-800">Security bypass active. Proceed directly with Owner PIN 123456.</span>
-                </div>
-              </div>
-            )}
+              <div id="recaptcha-container" className="min-h-[78px] flex items-center justify-center"></div>
+            </div>
 
             {/* Submit CTA Button */}
             <button
               type="submit"
-              disabled={loading || phone.length !== 10 || (!captchaSolved && !isAuthorizedOwner(phone))}
+              disabled={loading || phone.length !== 10 || !captchaSolved}
               className={`w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 mt-4 ${
-                loading || phone.length !== 10 || (!captchaSolved && !isAuthorizedOwner(phone))
+                loading || phone.length !== 10 || !captchaSolved
                   ? 'bg-[#E7E2DA] text-[#8C827A] cursor-not-allowed shadow-none'
                   : 'bg-[#581825] hover:bg-[#380B12] text-white shadow-md cursor-pointer hover:shadow-lg'
               }`}
@@ -589,13 +474,11 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
                   ? 'Dispatching SMS Code...'
                   : phone.length !== 10
                   ? 'Enter 10-Digit Mobile Number'
-                  : isAuthorizedOwner(phone)
-                  ? 'Proceed to Owner Verification'
                   : !captchaSolved
                   ? 'Check "I\'m not a robot" Above'
                   : 'Get OTP Verification Code'}
               </span>
-              <ArrowRight className={`w-4 h-4 ${(phone.length === 10 && (captchaSolved || isAuthorizedOwner(phone))) ? 'text-[#C5A880]' : 'text-[#A8A29E]'}`} />
+              <ArrowRight className={`w-4 h-4 ${(phone.length === 10 && captchaSolved) ? 'text-[#C5A880]' : 'text-[#A8A29E]'}`} />
             </button>
           </form>
         )}
@@ -649,20 +532,6 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
                 ))}
               </div>
             </div>
-
-            {/* Authorized store head / owner quick test code */}
-            {isAuthorizedOwner(phone) && (
-              <div className="text-center pt-0.5">
-                <button
-                  type="button"
-                  onClick={() => fillDemoOtp('123456')}
-                  className="text-[11px] text-[#A8A29E] hover:text-[#581825] transition-colors cursor-pointer inline-flex items-center gap-1 font-medium"
-                >
-                  <Sparkles className="w-3 h-3 text-[#C5A880]" />
-                  <span>Auto-fill owner access code (123456)</span>
-                </button>
-              </div>
-            )}
 
             {/* Resend Timer & Action */}
             <div className="text-center text-xs">

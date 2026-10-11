@@ -401,16 +401,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const formattedE164 = `+91${cleanPhone}`;
       const formattedDisplay = `+91 ${cleanPhone.slice(0, 5)} ${cleanPhone.slice(5)}`;
 
-      // 0. Authorized store heads/owners instant bypass (7972565911, 7498806028, 9822123456)
-      if (isAuthorizedOwner(cleanPhone)) {
-        return {
-          success: true,
-          message: `Owner verification active for ${formattedDisplay}. Use Owner PIN 123456 to enter.`,
-          formattedPhone: formattedDisplay,
-          otpPreview: '123456',
-        };
-      }
-
       // 1. PRIMARY: Real Firebase Phone Auth SDK
       if (isFirebaseConfigured && auth && typeof window !== 'undefined') {
         try {
@@ -500,17 +490,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      return {
-        success: false,
-        message: 'Firebase Authentication is not configured.',
-        formattedPhone: formattedDisplay,
-      };
-
-      // Fallback if Firebase client is not configured
+      // Fallback to server route if Firebase client is not configured
       const res = await fetch('/api/auth/otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send', phone }),
+        body: JSON.stringify({ action: 'send', phone: cleanPhone }),
       });
       return await res.json();
     } catch (e: any) {
@@ -526,40 +510,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const owner = getOwnerProfile(cleanPhone);
       const isOwner = Boolean(owner);
 
-      // 1. Instant bypass for authorized store heads/owners during testing (7972565911, 7498806028, 9822123456 + 123456)
-      if (isOwner && otp.trim() === '123456') {
-        const adminUserObj: AdminUser = {
-          uid: `adm-${cleanPhone}`,
-          name: owner!.name,
-          email: owner!.email,
-          phone: formattedDisplay,
-          role: 'super_admin',
-          isActive: true,
-        };
-
-        const customerObj: CustomerUser = {
-          uid: `owner-cust-${cleanPhone}`,
-          name: owner!.name,
-          email: owner!.email,
-          phone: formattedDisplay,
-          isGuest: false,
-        };
-
-        setAdminUser(adminUserObj);
-        setCustomer(customerObj);
-        saveAdminSession(adminUserObj, `vj_adm_otp_${Date.now()}_${cleanPhone}`);
-        saveCustomerSession(customerObj);
-        markDeviceAsTrusted(cleanPhone);
-
-        return {
-          success: true,
-          role: 'super_admin',
-          isOwner: true,
-          message: `Welcome, ${owner!.name}. Full store owner administrative access granted.`,
-        };
-      }
-
-      // 2. PRIMARY: Verify via Firebase confirmationResult
+      // 1. PRIMARY: Verify via Firebase confirmationResult
       if (typeof window !== 'undefined' && window.confirmationResult) {
         try {
           const userCred = await window.confirmationResult.confirm(otp.trim());
