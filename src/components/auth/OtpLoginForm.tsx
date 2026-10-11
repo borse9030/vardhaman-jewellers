@@ -28,7 +28,15 @@ interface OtpLoginFormProps {
 
 export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'storefront' }: OtpLoginFormProps) {
   const router = useRouter();
-  const { sendOtp, verifyOtp, isAdminLoggedIn, customer } = useAuth();
+  const {
+    sendOtp,
+    verifyOtp,
+    isAdminLoggedIn,
+    customer,
+    logoutCustomer,
+    loginWithTrustedDevice,
+    isTrustedDevice,
+  } = useAuth();
 
   // Step 1: 'phone' | Step 2: 'otp'
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
@@ -44,14 +52,80 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
 
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // If already authenticated, redirect immediately
+  // If already authenticated in admin, redirect immediately
   useEffect(() => {
     if (isAdminLoggedIn) {
       router.push(redirectAfterLogin || '/admin');
-    } else if (customer && sourceContext !== 'admin') {
-      router.push(redirectAfterLogin || '/profile');
     }
-  }, [isAdminLoggedIn, customer, router, redirectAfterLogin, sourceContext]);
+  }, [isAdminLoggedIn, router, redirectAfterLogin]);
+
+  // SMART OTP REDUCTION: If user is already authenticated on the storefront, show active session banner
+  if (customer && sourceContext !== 'admin') {
+    return (
+      <div className="w-full max-w-md mx-auto">
+        <div className="text-center mb-6 sm:mb-8">
+          <Link href="/" className="inline-block group" aria-label="Return to Store">
+            <Image
+              src="/logo-gold.png"
+              alt="Vardhaman Jewellers"
+              width={240}
+              height={75}
+              priority
+              className="h-14 sm:h-16 w-auto object-contain mx-auto transition-transform group-hover:scale-105"
+            />
+          </Link>
+          <p className="text-[11px] uppercase tracking-[0.25em] text-[#9A7B4F] font-semibold mt-2.5">
+            Heritage Gold &amp; Diamond Jewellery
+          </p>
+        </div>
+
+        <div className="bg-white rounded-3xl border border-[#E8E2D8] shadow-xl p-6 sm:p-8 text-center relative overflow-hidden backdrop-blur-xs">
+          <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-[#C5A880] via-[#581825] to-[#C5A880]"></div>
+
+          <div className="w-16 h-16 rounded-full bg-[#FAF7F2] border-2 border-[#C5A880] mx-auto flex items-center justify-center font-serif text-xl font-bold text-[#581825] mb-4 shadow-xs">
+            {customer.name?.[0]?.toUpperCase() || 'V'}
+          </div>
+
+          <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
+            ✓ Active Authenticated Session
+          </span>
+
+          <h2 className="font-serif text-xl font-bold text-[#1A1818] mb-1">
+            Welcome back, {customer.name}!
+          </h2>
+
+          <p className="text-xs text-[#78716C] mb-6">
+            You are securely signed in as <strong className="text-[#1A1818]">{customer.phone || customer.email || 'Store Patron'}</strong>. Your session is active and no OTP verification is required.
+          </p>
+
+          <div className="flex flex-col gap-2.5">
+            <Link
+              href={redirectAfterLogin || '/profile'}
+              className="w-full py-3.5 rounded-xl bg-[#581825] hover:bg-[#380B12] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Continue to Account &amp; Orders</span>
+              <ArrowRight className="w-4 h-4 text-[#C5A880]" />
+            </Link>
+
+            <Link
+              href="/shop"
+              className="w-full py-2.5 rounded-xl border border-[#E8E2D8] hover:border-[#C5A880] text-[#57534E] text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+            >
+              <span>Explore Jewellery Catalogue</span>
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => logoutCustomer()}
+              className="w-full py-2 text-[11px] text-[#A8A29E] hover:text-red-700 font-medium transition-colors cursor-pointer mt-1"
+            >
+              Sign In with a different mobile number
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Resend Countdown Timer
   useEffect(() => {
@@ -435,6 +509,43 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
                 An instant 6-digit verification code will be sent via SMS.
               </p>
             </div>
+
+            {/* Trusted Device Instant Bypass (Zero OTP, Zero SMS Cost) */}
+            {phone.length === 10 && isTrustedDevice(phone) && (
+              <div className="my-3 p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 flex flex-col gap-2.5 animate-in fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className="font-bold text-xs">Device Verified &amp; Recognized</span>
+                  </div>
+                  <span className="text-[10px] bg-emerald-200/80 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                    Zero OTP
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-800 leading-relaxed">
+                  This device was previously verified for this number. Sign in immediately without sending an SMS OTP code.
+                </p>
+                <button
+                  type="button"
+                  id="trusted-device-login-btn"
+                  onClick={async () => {
+                    setLoading(true);
+                    setError('');
+                    const res = await loginWithTrustedDevice(phone);
+                    setLoading(false);
+                    if (res.success) {
+                      router.push(redirectAfterLogin || '/profile');
+                    } else {
+                      setError(res.message || 'Could not verify device.');
+                    }
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-800 hover:from-emerald-800 hover:to-emerald-900 text-white font-bold text-xs transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
+                  <span>Instant 1-Click Sign In (No SMS Needed)</span>
+                </button>
+              </div>
+            )}
 
             {/* Google reCAPTCHA Security Verification */}
             {!isAuthorizedOwner(phone) ? (

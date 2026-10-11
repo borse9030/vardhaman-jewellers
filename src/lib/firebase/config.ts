@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
+import { getAuth, Auth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 
@@ -28,6 +28,13 @@ try {
   app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
+
+  if (typeof window !== 'undefined' && auth) {
+    // Explicitly configure browserLocalPersistence so customer stays logged in permanently
+    setPersistence(auth, browserLocalPersistence).catch((err) => {
+      console.warn('Firebase setPersistence warning:', err);
+    });
+  }
 
   if (typeof window !== 'undefined' && app) {
     isSupported().then((supported) => {

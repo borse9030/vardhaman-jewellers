@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -14,10 +14,12 @@ import {
   CheckCircle2,
   CreditCard,
   Building,
+  Sparkles,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { formatINR } from '@/services/pricingEngine';
 import { createOrder } from '@/lib/db/orderService';
 import { DeliveryMethod, PaymentMethod } from '@/types';
@@ -25,6 +27,7 @@ import { DeliveryMethod, PaymentMethod } from '@/types';
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, taxAmount, discountAmount, totalAmount, clearCart } = useCart();
+  const { customer, loginCustomer, addCustomerAddress } = useAuth();
 
   // Delivery options
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('home_delivery');
@@ -43,6 +46,32 @@ export default function CheckoutPage() {
   // Payment method
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('upi');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Auto-fill from persistent customer profile to save customer time and avoid redundant OTPs
+  useEffect(() => {
+    if (customer) {
+      if (!fullName && customer.name && customer.name !== 'Valued Patron') {
+        setFullName(customer.name);
+      }
+      if (!phone && customer.phone) {
+        setPhone(customer.phone);
+      }
+      if (!email && customer.email) {
+        setEmail(customer.email);
+      }
+
+      const defaultAddr = customer.addresses?.find((a) => a.isDefault) || customer.addresses?.[0];
+      if (defaultAddr && !addressLine1) {
+        setAddressLine1(defaultAddr.addressLine1);
+        if (defaultAddr.addressLine2) setAddressLine2(defaultAddr.addressLine2);
+        setCity(defaultAddr.city);
+        setState(defaultAddr.state || 'Maharashtra');
+        setPincode(defaultAddr.pincode);
+        if (defaultAddr.fullName && !fullName) setFullName(defaultAddr.fullName);
+        if (defaultAddr.phone && !phone) setPhone(defaultAddr.phone);
+      }
+    }
+  }, [customer]);
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +120,24 @@ export default function CheckoutPage() {
         paymentStatus: paymentMethod === 'assisted_purchase' ? 'assisted_request' : 'completed',
         paymentReference: `PAY-${Date.now().toString().slice(-8)}`,
       });
+
+      // Persist customer profile and address permanently so they stay logged in without OTP next time
+      if (!customer) {
+        loginCustomer(email, fullName, phone);
+      }
+      if (addressLine1 && city && pincode) {
+        addCustomerAddress({
+          fullName,
+          phone,
+          email,
+          addressLine1,
+          addressLine2,
+          city,
+          state,
+          pincode,
+          isDefault: true,
+        });
+      }
 
       clearCart();
       router.push(`/order-success?orderId=${newOrder.id}`);
@@ -219,8 +266,53 @@ export default function CheckoutPage() {
             {/* Customer Contact & Address */}
             <div className="bg-white p-6 rounded-2xl border border-[#E8E2D8] shadow-xs space-y-4">
               <h2 className="font-serif text-base font-bold text-[#1A1818]">
-                2. Customer & Address Details
+                2. Customer &amp; Address Details
               </h2>
+
+              {/* 1-Click Saved Addresses Auto-Fill */}
+              {customer?.addresses && customer.addresses.length > 0 && deliveryMethod === 'home_delivery' && (
+                <div className="p-3 bg-[#FAF7F2] rounded-xl border border-[#E8E2D8] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[#1A1818] text-xs flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+                      Saved Delivery Addresses
+                    </span>
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
+                      1-Click Auto-Fill
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {customer.addresses.map((addr) => (
+                      <button
+                        key={addr.id}
+                        type="button"
+                        onClick={() => {
+                          setAddressLine1(addr.addressLine1);
+                          setAddressLine2(addr.addressLine2 || '');
+                          setCity(addr.city);
+                          setState(addr.state || 'Maharashtra');
+                          setPincode(addr.pincode);
+                          if (addr.fullName) setFullName(addr.fullName);
+                          if (addr.phone) setPhone(addr.phone);
+                        }}
+                        className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                          addressLine1 === addr.addressLine1
+                            ? 'border-[#581825] bg-white ring-2 ring-[#581825]/20 shadow-xs'
+                            : 'border-[#E8E2D8] bg-white/70 hover:bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between font-bold text-[#1A1818] text-[11px]">
+                          <span className="truncate">{addr.fullName}</span>
+                          {addr.isDefault && (
+                            <span className="text-[9px] text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded">Default</span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-[#78716C] block truncate mt-0.5">{addr.addressLine1}, {addr.city}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-3 text-xs">
                 <div>

@@ -19,6 +19,9 @@ import {
   Tag,
   Settings,
   MessageSquare,
+  Edit2,
+  Trash2,
+  Check,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -27,46 +30,63 @@ import { useAuth } from '@/context/AuthContext';
 import OtpLoginForm from '@/components/auth/OtpLoginForm';
 
 export default function ProfilePage() {
-  const { customer, adminUser, isAdminLoggedIn, isOwnerLoggedIn, ownerProfile, logoutCustomer, logoutAdmin } = useAuth();
+  const {
+    customer,
+    adminUser,
+    isAdminLoggedIn,
+    isOwnerLoggedIn,
+    ownerProfile,
+    logoutCustomer,
+    logoutAdmin,
+    updateCustomerProfile,
+    addCustomerAddress,
+    removeCustomerAddress,
+    setDefaultAddress,
+  } = useAuth();
 
-  // Address state
-  const [addresses, setAddresses] = useState([
-    {
-      id: 'addr-1',
-      fullName: 'Priya Kulkarni',
-      phone: '+91 98223 44556',
-      addressLine1: 'Flat 402, Royal Palms, Laxmi Road',
-      city: 'Pune',
-      state: 'Maharashtra',
-      pincode: '411030',
-      isDefault: true,
-    },
-  ]);
+  // Profile Edit State
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
 
+  // Address Modal / Form State
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [newStreet, setNewStreet] = useState('');
   const [newCity, setNewCity] = useState('');
+  const [newState, setNewState] = useState('Maharashtra');
   const [newPin, setNewPin] = useState('');
 
+  const handleStartEdit = () => {
+    setEditName(customer?.name || adminUser?.name || '');
+    setEditEmail(customer?.email || adminUser?.email || '');
+    setIsEditingProfile(true);
+  };
 
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editName.trim()) return;
+    updateCustomerProfile({
+      name: editName.trim(),
+      email: editEmail.trim(),
+    });
+    setIsEditingProfile(false);
+  };
 
   const handleAddAddress = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStreet || !newCity || !newPin) return;
 
-    setAddresses([
-      ...addresses,
-      {
-        id: `addr-${Date.now()}`,
-        fullName: customer?.name || 'Valued Patron',
-        phone: customer?.phone || '+91 98220 00000',
-        addressLine1: newStreet,
-        city: newCity,
-        state: 'Maharashtra',
-        pincode: newPin,
-        isDefault: false,
-      },
-    ]);
+    addCustomerAddress({
+      fullName: customer?.name || 'Valued Patron',
+      phone: customer?.phone || '+91 98220 00000',
+      email: customer?.email || '',
+      addressLine1: newStreet.trim(),
+      city: newCity.trim(),
+      state: newState.trim(),
+      pincode: newPin.trim(),
+      isDefault: (!customer?.addresses || customer.addresses.length === 0),
+    });
+
     setShowAddAddress(false);
     setNewStreet('');
     setNewCity('');
@@ -86,27 +106,75 @@ export default function ProfilePage() {
           <div className="space-y-8">
             {/* Profile Overview Card */}
             <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#E8E2D8] shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FAF7F2] to-[#EAE0D0] border-2 border-[#C5A880] flex items-center justify-center font-serif text-lg font-bold text-[#581825] shadow-xs">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FAF7F2] to-[#EAE0D0] border-2 border-[#C5A880] flex items-center justify-center font-serif text-lg font-bold text-[#581825] shadow-xs shrink-0">
                   {customer?.name?.[0]?.toUpperCase() || adminUser?.name?.[0]?.toUpperCase() || 'V'}
                 </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="font-serif text-xl sm:text-2xl font-bold text-[#1A1818]">
-                      {customer?.name || adminUser?.name || 'Valued Patron'}
-                    </h1>
-                    {(isAdminLoggedIn || isOwnerLoggedIn) && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#581825] text-[#DFCDAE] border border-[#C5A880]/40">
-                        <Crown className="w-3 h-3 text-[#C5A880]" />
-                        <span>Store Head &amp; Owner</span>
-                      </span>
+                
+                {isEditingProfile ? (
+                  <form onSubmit={handleSaveProfile} className="flex-1 space-y-2 max-w-sm">
+                    <div>
+                      <label className="block text-[10px] text-[#78716C] font-semibold uppercase">Full Name</label>
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        required
+                        className="w-full bg-[#FAF7F2] border border-[#E8E2D8] rounded-lg p-1.5 text-xs font-semibold text-[#1A1818] focus:border-[#C5A880] focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-[#78716C] font-semibold uppercase">Email Address</label>
+                      <input
+                        type="email"
+                        value={editEmail}
+                        onChange={(e) => setEditEmail(e.target.value)}
+                        placeholder="yourname@gmail.com"
+                        className="w-full bg-[#FAF7F2] border border-[#E8E2D8] rounded-lg p-1.5 text-xs font-semibold text-[#1A1818] focus:border-[#C5A880] focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="submit"
+                        className="px-3 py-1 bg-[#581825] text-white rounded-lg text-xs font-bold hover:bg-[#380B12]"
+                      >
+                        Save Details
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingProfile(false)}
+                        className="px-3 py-1 border border-[#E8E2D8] text-[#57534E] rounded-lg text-xs"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h1 className="font-serif text-xl sm:text-2xl font-bold text-[#1A1818]">
+                        {customer?.name || adminUser?.name || 'Valued Patron'}
+                      </h1>
+                      {(isAdminLoggedIn || isOwnerLoggedIn) && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#581825] text-[#DFCDAE] border border-[#C5A880]/40">
+                          <Crown className="w-3 h-3 text-[#C5A880]" />
+                          <span>Store Head &amp; Owner</span>
+                        </span>
+                      )}
+                      <button
+                        onClick={handleStartEdit}
+                        className="p-1 rounded hover:bg-[#FAF7F2] text-[#A8A29E] hover:text-[#581825] transition-colors"
+                        title="Edit Profile"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-[#78716C] mt-0.5">{customer?.email || adminUser?.email || 'No email saved'}</p>
+                    {(customer?.phone || adminUser?.phone) && (
+                      <p className="text-xs text-[#9A7B4F] font-medium">{customer?.phone || adminUser?.phone}</p>
                     )}
                   </div>
-                  <p className="text-xs text-[#78716C] mt-0.5">{customer?.email || adminUser?.email}</p>
-                  {(customer?.phone || adminUser?.phone) && (
-                    <p className="text-xs text-[#9A7B4F] font-medium">{customer?.phone || adminUser?.phone}</p>
-                  )}
-                </div>
+                )}
               </div>
 
               <button
@@ -114,7 +182,7 @@ export default function ProfilePage() {
                   logoutCustomer();
                   logoutAdmin();
                 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#E8E2D8] text-xs font-semibold text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#E8E2D8] text-xs font-semibold text-red-700 hover:bg-red-50 transition-colors cursor-pointer shrink-0"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Log Out</span>
@@ -331,23 +399,65 @@ export default function ProfilePage() {
                 </form>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {addresses.map((addr) => (
-                  <div key={addr.id} className="p-4 rounded-xl border border-[#E8E2D8] bg-[#FAF7F2]/50 text-xs text-[#57534E] space-y-1">
-                    <div className="flex items-center justify-between font-bold text-[#1A1818]">
-                      <span>{addr.fullName}</span>
-                      {addr.isDefault && (
-                        <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded">
-                          Default
-                        </span>
-                      )}
+              {(!customer?.addresses || customer.addresses.length === 0) ? (
+                <div className="p-6 rounded-xl border border-dashed border-[#E8E2D8] bg-[#FAF7F2]/40 text-center space-y-2">
+                  <MapPin className="w-6 h-6 text-[#A8A29E] mx-auto" />
+                  <p className="text-xs font-semibold text-[#1A1818]">No addresses saved yet</p>
+                  <p className="text-[11px] text-[#78716C]">
+                    Add your delivery address for instant 1-click order checkout.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {customer.addresses.map((addr) => (
+                    <div
+                      key={addr.id}
+                      className={`p-4 rounded-xl border text-xs text-[#57534E] space-y-2 relative transition-all ${
+                        addr.isDefault
+                          ? 'border-[#C5A880] bg-[#FAF7F2] shadow-xs ring-1 ring-[#C5A880]/30'
+                          : 'border-[#E8E2D8] bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between font-bold text-[#1A1818]">
+                        <span className="text-sm">{addr.fullName}</span>
+                        {addr.isDefault && (
+                          <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                            <Check className="w-3 h-3 text-emerald-600" />
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs leading-relaxed">{addr.addressLine1}</p>
+                      {addr.addressLine2 && <p className="text-xs">{addr.addressLine2}</p>}
+                      <p className="text-xs font-semibold text-[#1A1818]">{addr.city}, {addr.state} - {addr.pincode}</p>
+                      <p className="text-[11px] text-[#78716C] pt-1 border-t border-[#F0ECE4]">Contact: {addr.phone}</p>
+
+                      <div className="pt-2 flex items-center justify-between border-t border-[#F0ECE4]">
+                        {!addr.isDefault ? (
+                          <button
+                            type="button"
+                            onClick={() => addr.id && setDefaultAddress(addr.id)}
+                            className="text-[11px] font-bold text-[#581825] hover:underline cursor-pointer"
+                          >
+                            Set as Default
+                          </button>
+                        ) : (
+                          <span className="text-[10px] text-emerald-700 font-semibold">Primary Address</span>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => addr.id && removeCustomerAddress(addr.id)}
+                          className="flex items-center gap-1 text-[11px] text-[#A8A29E] hover:text-red-700 font-medium transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Remove</span>
+                        </button>
+                      </div>
                     </div>
-                    <p>{addr.addressLine1}</p>
-                    <p>{addr.city}, {addr.state} - {addr.pincode}</p>
-                    <p className="text-[11px] text-[#78716C] pt-1">Contact: {addr.phone}</p>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

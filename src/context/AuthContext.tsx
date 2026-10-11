@@ -27,12 +27,30 @@ declare global {
   }
 }
 
+import { CustomerAddress } from '@/types';
+import {
+  saveCustomerSession,
+  loadCustomerSession,
+  clearCustomerSession,
+  saveAdminSession,
+  loadAdminSession,
+  clearAdminSession,
+  isDeviceTrusted,
+  markDeviceAsTrusted,
+  PersistentCustomerUser,
+} from '@/lib/auth/sessionManager';
+
 export interface CustomerUser {
   uid: string;
   name: string;
   email: string;
   phone?: string;
   isGuest?: boolean;
+  addresses?: CustomerAddress[];
+  createdAt?: string;
+  lastActiveAt?: string;
+  deviceToken?: string;
+  verifiedVia?: 'firebase_sms' | 'otp_sms' | 'owner_bypass' | 'checkout_verified' | 'trusted_device';
 }
 
 interface AuthContextType {
@@ -44,6 +62,12 @@ interface AuthContextType {
   authReady: boolean;
   loginCustomer: (email: string, name?: string, phone?: string) => void;
   logoutCustomer: () => void;
+  updateCustomerProfile: (updates: Partial<CustomerUser>) => void;
+  addCustomerAddress: (address: Omit<CustomerAddress, 'id'>) => CustomerAddress;
+  removeCustomerAddress: (addressId: string) => void;
+  setDefaultAddress: (addressId: string) => void;
+  loginWithTrustedDevice: (phone: string) => Promise<{ success: boolean; message?: string }>;
+  isTrustedDevice: (phone: string) => boolean;
   loginAdmin: (email: string, pass: string) => Promise<{ success: boolean; message?: string }>;
   logoutAdmin: () => void;
   hasRole: (roles: AdminRole[]) => boolean;
@@ -60,6 +84,12 @@ const AuthContext = createContext<AuthContextType>({
   authReady: false,
   loginCustomer: () => {},
   logoutCustomer: () => {},
+  updateCustomerProfile: () => {},
+  addCustomerAddress: () => ({} as CustomerAddress),
+  removeCustomerAddress: () => {},
+  setDefaultAddress: () => {},
+  loginWithTrustedDevice: async () => ({ success: false }),
+  isTrustedDevice: () => false,
   loginAdmin: async () => ({ success: false }),
   logoutAdmin: () => {},
   hasRole: () => false,
@@ -72,16 +102,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [authReady, setAuthReady] = useState(false);
 
-  // Restore sessions from storage and sync with Firebase Auth
+  // Restore sessions from multi-tier storage (LocalStorage + 1-Year Cookie) and sync with Firebase Auth
   useEffect(() => {
     try {
-      const storedCustomer = localStorage.getItem('vj_customer_user');
-      if (storedCustomer) {
-        setCustomer(JSON.parse(storedCustomer));
+      // 1. Load Customer Session
+      const restoredCust = loadCustomerSession();
+      if (restoredCust) {
+        setCustomer(restoredCust);
       }
-      const storedAdmin = localStorage.getItem('vj_admin_user');
-      if (storedAdmin) {
-        setAdminUser(JSON.parse(storedAdmin));
+
+      // 2. Load Admin Session
+      const restoredAdmin = loadAdminSession();
+      if (restoredAdmin) {
+        setAdminUser(restoredAdmin);
       }
     } catch (e) {
       console.error('Failed to parse auth sessions:', e);
@@ -89,6 +122,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAuthReady(true);
     }
 
+    // 3. Setup Cross-Tab Multi-Window Auth Synchronization
+    let channel: BroadcastChannel | null = null;
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        channel = new BroadcastChannel('vj_auth_sync_channel');
+        channel.onmessage = (event) => {
+          const { type, data } = event.data || {};
+          if (type === 'CUSTOMER_LOGIN' && data) {
+            setCustomer(data);
+          } else if (type === 'CUSTOMER_LOGOUT') {
+            setCustomer(null);
+          } else if (type === 'ADMIN_LOGIN' && data) {
+            setAdminUser(data);
+          } else if (type === 'ADMIN_LOGOUT') {
+            setAdminUser(null);
+          } else if (type === 'PROFILE_UPDATED' && data) {
+            setCustomer(data);
+          }
+        };
+      } catch {}
+    }
+
+    // Storage event listener fallback for older browsers
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'vj_customer_user') {
+        if (e.newValue) {
+          try {
+            setCustomer(JSON.parse(e.newValue));
+          } catch {}
+        } else {
+          setCustomer(null);
+        }
+      } else if (e.key === 'vj_admin_user') {
+        if (e.newValue) {
+          try {
+            setAdminUser(JSON.parse(e.newValue));
+          } catch {}
+        } else {
+          setAdminUser(null);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // 4. Firebase Auth synchronization
     if (isFirebaseConfigured && auth) {
       const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
         if (fbUser) {
@@ -103,14 +181,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               isActive: true,
             };
             setAdminUser((prev) => prev || adminUserObj);
-            try {
-              localStorage.setItem('vj_admin_user', JSON.stringify(adminUserObj));
-              if (!localStorage.getItem('vj_admin_token')) {
-                localStorage.setItem('vj_admin_token', `vj_adm_fb_${Date.now()}_${owner.phone}`);
-              }
-            } catch (e) {
-              console.warn('Storage sync error:', e);
-            }
+            saveAdminSession(adminUserObj, `vj_adm_fb_${Date.now()}_${owner.phone}`);
           }
 
           setCustomer((prev) => {
@@ -121,17 +192,145 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 email: fbUser.email || (owner ? owner.email : ''),
                 phone: fbUser.phoneNumber || (owner ? formatIndianPhone(owner.phone) : ''),
                 isGuest: false,
+                verifiedVia: 'firebase_sms',
+                createdAt: new Date().toISOString(),
+                lastActiveAt: new Date().toISOString(),
               };
-              localStorage.setItem('vj_customer_user', JSON.stringify(restored));
+              saveCustomerSession(restored);
               return restored;
             }
             return prev;
           });
         }
       });
-      return () => unsubscribe();
+      return () => {
+        unsubscribe();
+        if (channel) channel.close();
+        window.removeEventListener('storage', handleStorage);
+      };
     }
+
+    return () => {
+      if (channel) channel.close();
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
+
+  const updateCustomerProfile = (updates: Partial<CustomerUser>) => {
+    setCustomer((prev) => {
+      if (!prev) return null;
+      const updated: CustomerUser = {
+        ...prev,
+        ...updates,
+        lastActiveAt: new Date().toISOString(),
+      };
+      saveCustomerSession(updated);
+      return updated;
+    });
+  };
+
+  const addCustomerAddress = (address: Omit<CustomerAddress, 'id'>): CustomerAddress => {
+    const newId = `addr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const fullAddress: CustomerAddress = {
+      ...address,
+      id: newId,
+    };
+
+    setCustomer((prev) => {
+      const base: CustomerUser = prev || {
+        uid: `cust-${Date.now()}`,
+        name: address.fullName,
+        email: address.email,
+        phone: address.phone,
+        isGuest: false,
+      };
+
+      const existing = base.addresses || [];
+      const updatedAddresses = address.isDefault
+        ? [...existing.map((a) => ({ ...a, isDefault: false })), { ...fullAddress, isDefault: true }]
+        : [...existing, fullAddress];
+
+      const updated: CustomerUser = {
+        ...base,
+        addresses: updatedAddresses,
+        lastActiveAt: new Date().toISOString(),
+      };
+
+      saveCustomerSession(updated);
+      return updated;
+    });
+
+    return fullAddress;
+  };
+
+  const removeCustomerAddress = (addressId: string) => {
+    setCustomer((prev) => {
+      if (!prev || !prev.addresses) return prev;
+      const filtered = prev.addresses.filter((a) => a.id !== addressId);
+      const updated: CustomerUser = {
+        ...prev,
+        addresses: filtered,
+        lastActiveAt: new Date().toISOString(),
+      };
+      saveCustomerSession(updated);
+      return updated;
+    });
+  };
+
+  const setDefaultAddress = (addressId: string) => {
+    setCustomer((prev) => {
+      if (!prev || !prev.addresses) return prev;
+      const updatedList = prev.addresses.map((a) => ({
+        ...a,
+        isDefault: a.id === addressId,
+      }));
+      const updated: CustomerUser = {
+        ...prev,
+        addresses: updatedList,
+        lastActiveAt: new Date().toISOString(),
+      };
+      saveCustomerSession(updated);
+      return updated;
+    });
+  };
+
+  // Instant Login with Trusted Device (Zero OTP, Zero SMS Cost)
+  const loginWithTrustedDevice = async (phone: string): Promise<{ success: boolean; message?: string }> => {
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      return { success: false, message: 'Invalid phone number' };
+    }
+
+    if (!isDeviceTrusted(cleanPhone)) {
+      return { success: false, message: 'This device is not yet verified for this phone number.' };
+    }
+
+    const formattedDisplay = formatIndianPhone(cleanPhone);
+    const existing = loadCustomerSession();
+
+    const restoredUser: CustomerUser = {
+      uid: existing && existing.phone?.includes(cleanPhone) ? existing.uid : `cust-${cleanPhone}`,
+      name: existing && existing.phone?.includes(cleanPhone) ? existing.name : 'Valued Patron',
+      email: existing && existing.phone?.includes(cleanPhone) ? existing.email : '',
+      phone: formattedDisplay,
+      isGuest: false,
+      addresses: existing?.addresses || [],
+      verifiedVia: 'trusted_device',
+      lastActiveAt: new Date().toISOString(),
+    };
+
+    setCustomer(restoredUser);
+    saveCustomerSession(restoredUser);
+
+    return {
+      success: true,
+      message: `Device recognized! Welcome back, ${restoredUser.name}.`,
+    };
+  };
+
+  const isTrustedDevice = (phone: string): boolean => {
+    return isDeviceTrusted(phone);
+  };
 
   const loginCustomer = (email: string, name = 'Valued Customer', phone?: string) => {
     const cust: CustomerUser = {
@@ -140,14 +339,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       name,
       phone,
       isGuest: false,
+      createdAt: new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(),
     };
     setCustomer(cust);
-    localStorage.setItem('vj_customer_user', JSON.stringify(cust));
+    saveCustomerSession(cust);
   };
 
   const logoutCustomer = () => {
     setCustomer(null);
-    localStorage.removeItem('vj_customer_user');
+    clearCustomerSession();
     if (isFirebaseConfigured && auth) {
       signOut(auth).catch((err) => console.warn('Firebase signout:', err));
     }
@@ -179,8 +380,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logoutAdmin = () => {
     setAdminUser(null);
-    localStorage.removeItem('vj_admin_user');
-    localStorage.removeItem('vj_admin_token');
+    clearAdminSession();
     if (isFirebaseConfigured && auth) {
       signOut(auth).catch((err) => console.warn('Firebase signout:', err));
     }
@@ -347,9 +547,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setAdminUser(adminUserObj);
         setCustomer(customerObj);
-        localStorage.setItem('vj_admin_user', JSON.stringify(adminUserObj));
-        localStorage.setItem('vj_admin_token', `vj_adm_otp_${Date.now()}_${cleanPhone}`);
-        localStorage.setItem('vj_customer_user', JSON.stringify(customerObj));
+        saveAdminSession(adminUserObj, `vj_adm_otp_${Date.now()}_${cleanPhone}`);
+        saveCustomerSession(customerObj);
+        markDeviceAsTrusted(cleanPhone);
 
         return {
           success: true,
@@ -381,13 +581,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               email: fbUser.email || owner!.email,
               phone: fbUser.phoneNumber || formattedDisplay,
               isGuest: false,
+              verifiedVia: 'firebase_sms',
             };
 
             setAdminUser(adminUserObj);
             setCustomer(customerObj);
-            localStorage.setItem('vj_admin_user', JSON.stringify(adminUserObj));
-            localStorage.setItem('vj_admin_token', `vj_adm_otp_${Date.now()}_${cleanPhone}`);
-            localStorage.setItem('vj_customer_user', JSON.stringify(customerObj));
+            saveAdminSession(adminUserObj, `vj_adm_otp_${Date.now()}_${cleanPhone}`);
+            saveCustomerSession(customerObj);
+            markDeviceAsTrusted(cleanPhone);
 
             return {
               success: true,
@@ -399,18 +600,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           // Regular customer user - ensure admin session is cleared for security
           setAdminUser(null);
-          localStorage.removeItem('vj_admin_user');
-          localStorage.removeItem('vj_admin_token');
+          clearAdminSession();
 
+          // Restore existing saved profile details (like addresses) if same user
+          const existingCust = loadCustomerSession();
           const customerObj: CustomerUser = {
             uid: fbUser.uid,
-            name: fbUser.displayName || 'Valued Patron',
-            email: fbUser.email || '',
+            name: (existingCust && existingCust.phone === formattedDisplay && existingCust.name) ? existingCust.name : (fbUser.displayName || 'Valued Patron'),
+            email: fbUser.email || existingCust?.email || '',
             phone: fbUser.phoneNumber || formattedDisplay,
             isGuest: false,
+            addresses: existingCust?.addresses || [],
+            verifiedVia: 'firebase_sms',
+            createdAt: existingCust?.createdAt || new Date().toISOString(),
+            lastActiveAt: new Date().toISOString(),
           };
+
           setCustomer(customerObj);
-          localStorage.setItem('vj_customer_user', JSON.stringify(customerObj));
+          saveCustomerSession(customerObj);
+          markDeviceAsTrusted(cleanPhone);
 
           return {
             success: true,
@@ -432,19 +640,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (fallbackData.success && fallbackData.user) {
               if (fallbackData.role === 'super_admin') {
                 setAdminUser(fallbackData.user);
-                localStorage.setItem('vj_admin_user', JSON.stringify(fallbackData.user));
-                if (fallbackData.token) localStorage.setItem('vj_admin_token', fallbackData.token);
+                saveAdminSession(fallbackData.user, fallbackData.token);
                 if (fallbackData.customer) {
                   setCustomer(fallbackData.customer);
-                  localStorage.setItem('vj_customer_user', JSON.stringify(fallbackData.customer));
+                  saveCustomerSession(fallbackData.customer);
                 }
+                markDeviceAsTrusted(cleanPhone);
                 return { success: true, role: 'super_admin', isOwner: true, message: fallbackData.message };
               } else {
                 setAdminUser(null);
-                localStorage.removeItem('vj_admin_user');
-                localStorage.removeItem('vj_admin_token');
-                setCustomer(fallbackData.user);
-                localStorage.setItem('vj_customer_user', JSON.stringify(fallbackData.user));
+                clearAdminSession();
+                const existingCust = loadCustomerSession();
+                const custUser = {
+                  ...fallbackData.user,
+                  addresses: existingCust?.addresses || [],
+                  verifiedVia: 'otp_sms' as const,
+                };
+                setCustomer(custUser);
+                saveCustomerSession(custUser);
+                markDeviceAsTrusted(cleanPhone);
                 return { success: true, role: 'customer', isOwner: false, message: fallbackData.message };
               }
             }
@@ -517,6 +731,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         authReady,
         loginCustomer,
         logoutCustomer,
+        updateCustomerProfile,
+        addCustomerAddress,
+        removeCustomerAddress,
+        setDefaultAddress,
+        loginWithTrustedDevice,
+        isTrustedDevice,
         loginAdmin,
         logoutAdmin,
         hasRole,
