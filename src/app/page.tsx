@@ -35,15 +35,23 @@ export default function HomePage() {
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
 
   useEffect(() => {
-    getAllProducts().then((data) => {
-      if (data && data.length > 0) setProducts(data);
-    });
+    const loadProducts = () => {
+      getAllProducts().then((data) => {
+        if (data && data.length > 0) setProducts(data);
+      });
+    };
+    loadProducts();
+
+    window.addEventListener('vj_products_updated', loadProducts);
 
     // Auto-advance hero carousel
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % INITIAL_BANNERS.length);
     }, 6500);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('vj_products_updated', loadProducts);
+    };
   }, []);
 
   const categories = [

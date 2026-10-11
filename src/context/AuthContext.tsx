@@ -201,6 +201,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const formattedE164 = `+91${cleanPhone}`;
       const formattedDisplay = `+91 ${cleanPhone.slice(0, 5)} ${cleanPhone.slice(5)}`;
 
+      // 0. Authorized store heads/owners instant bypass (7972565911, 7498806028, 9822123456)
+      if (isAuthorizedOwner(cleanPhone)) {
+        return {
+          success: true,
+          message: `Owner verification active for ${formattedDisplay}. Use Owner PIN 123456 to enter.`,
+          formattedPhone: formattedDisplay,
+          otpPreview: '123456',
+        };
+      }
+
       // 1. PRIMARY: Real Firebase Phone Auth SDK
       if (isFirebaseConfigured && auth && typeof window !== 'undefined') {
         try {

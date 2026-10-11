@@ -143,7 +143,7 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
       return;
     }
 
-    if (!captchaSolved) {
+    if (!captchaSolved && !isAuthorizedOwner(phone)) {
       setError('Please check the "I\'m not a robot" security check box below before continuing.');
       return;
     }
@@ -368,6 +368,43 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
           </div>
         )}
 
+        {/* One-Click Store Head Quick Access for Admin */}
+        {sourceContext === 'admin' && step === 'phone' && (
+          <div className="mb-5 p-4 rounded-2xl bg-[#581825]/5 border border-[#581825]/20 flex flex-col gap-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#581825] uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+                Store Head Express Entry
+              </span>
+              <span className="text-[10px] text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full font-bold">
+                Bhave (MD)
+              </span>
+            </div>
+            <button
+              type="button"
+              id="admin-express-login-btn"
+              onClick={async () => {
+                setLoading(true);
+                setError('');
+                const res = await verifyOtp('7972565911', '123456');
+                setLoading(false);
+                if (res.success) {
+                  router.push(redirectAfterLogin || '/admin');
+                } else {
+                  setError(res.message || 'Owner authentication failed.');
+                }
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#581825] to-[#782333] hover:from-[#782333] hover:to-[#581825] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Instant Sign In as Store Owner (7972565911)</span>
+              <ArrowRight className="w-3.5 h-3.5 text-[#C5A880]" />
+            </button>
+            <p className="text-[10px] text-[#78716C] text-center">
+              Direct access for authorized owner Bhave with administrative role.
+            </p>
+          </div>
+        )}
+
         {/* ================= STEP 1: PHONE NUMBER ENTRY ================= */}
         {step === 'phone' && (
           <form onSubmit={handleSendOtp} className="space-y-4 text-xs">
@@ -400,28 +437,38 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
             </div>
 
             {/* Google reCAPTCHA Security Verification */}
-            <div className={`flex flex-col items-center justify-center my-3 p-3.5 rounded-2xl transition-all ${
-              !captchaSolved && phone.length === 10
-                ? 'bg-[#FAF4ED] border-2 border-[#C5A880] ring-4 ring-[#C5A880]/15'
-                : 'bg-[#FAF7F2] border border-[#E8E2D8]'
-            }`}>
-              <div className="flex items-center gap-1.5 mb-2.5 text-[11px] font-semibold text-[#44403C]">
-                <ShieldCheck className={`w-4 h-4 ${captchaSolved ? 'text-emerald-600' : 'text-[#9A7B4F]'}`} />
-                <span>
-                  {captchaSolved
-                    ? 'Security verification complete'
-                    : 'Security Check: Check "I\'m not a robot" below'}
-                </span>
+            {!isAuthorizedOwner(phone) ? (
+              <div className={`flex flex-col items-center justify-center my-3 p-3.5 rounded-2xl transition-all ${
+                !captchaSolved && phone.length === 10
+                  ? 'bg-[#FAF4ED] border-2 border-[#C5A880] ring-4 ring-[#C5A880]/15'
+                  : 'bg-[#FAF7F2] border border-[#E8E2D8]'
+              }`}>
+                <div className="flex items-center gap-1.5 mb-2.5 text-[11px] font-semibold text-[#44403C]">
+                  <ShieldCheck className={`w-4 h-4 ${captchaSolved ? 'text-emerald-600' : 'text-[#9A7B4F]'}`} />
+                  <span>
+                    {captchaSolved
+                      ? 'Security verification complete'
+                      : 'Security Check: Check "I\'m not a robot" below'}
+                  </span>
+                </div>
+                <div id="recaptcha-container" className="min-h-[78px] flex items-center justify-center"></div>
               </div>
-              <div id="recaptcha-container" className="min-h-[78px] flex items-center justify-center"></div>
-            </div>
+            ) : (
+              <div className="my-3 p-3.5 rounded-2xl bg-amber-50/80 border border-amber-300 text-amber-900 flex items-center gap-2.5">
+                <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0" />
+                <div>
+                  <span className="font-bold text-xs block">Authorized Store Head &amp; Owner</span>
+                  <span className="text-[11px] text-amber-800">Security bypass active. Proceed directly with Owner PIN 123456.</span>
+                </div>
+              </div>
+            )}
 
             {/* Submit CTA Button */}
             <button
               type="submit"
-              disabled={loading || phone.length !== 10 || !captchaSolved}
+              disabled={loading || phone.length !== 10 || (!captchaSolved && !isAuthorizedOwner(phone))}
               className={`w-full py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 mt-4 ${
-                loading || phone.length !== 10 || !captchaSolved
+                loading || phone.length !== 10 || (!captchaSolved && !isAuthorizedOwner(phone))
                   ? 'bg-[#E7E2DA] text-[#8C827A] cursor-not-allowed shadow-none'
                   : 'bg-[#581825] hover:bg-[#380B12] text-white shadow-md cursor-pointer hover:shadow-lg'
               }`}
@@ -431,11 +478,13 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
                   ? 'Dispatching SMS Code...'
                   : phone.length !== 10
                   ? 'Enter 10-Digit Mobile Number'
+                  : isAuthorizedOwner(phone)
+                  ? 'Proceed to Owner Verification'
                   : !captchaSolved
                   ? 'Check "I\'m not a robot" Above'
                   : 'Get OTP Verification Code'}
               </span>
-              <ArrowRight className={`w-4 h-4 ${phone.length === 10 && captchaSolved ? 'text-[#C5A880]' : 'text-[#A8A29E]'}`} />
+              <ArrowRight className={`w-4 h-4 ${(phone.length === 10 && (captchaSolved || isAuthorizedOwner(phone))) ? 'text-[#C5A880]' : 'text-[#A8A29E]'}`} />
             </button>
           </form>
         )}

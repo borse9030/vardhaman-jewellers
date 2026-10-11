@@ -79,8 +79,8 @@ export default function AdminCouponsPage() {
         </button>
       </div>
 
-      {/* Coupons Table */}
-      <div className="bg-[#171515] rounded-2xl border border-white/10 overflow-hidden shadow-xs">
+      {/* Desktop Coupons Table */}
+      <div className="hidden sm:block bg-[#171515] rounded-2xl border border-white/10 overflow-hidden shadow-xs">
         <div className="overflow-x-auto text-xs text-[#E8E2D8]">
           <table className="w-full text-left">
             <thead>
@@ -140,6 +140,55 @@ export default function AdminCouponsPage() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Mobile Coupons Cards (sm:hidden) */}
+      <div className="sm:hidden flex flex-col gap-3">
+        {coupons.map((c) => (
+          <div
+            key={c.id}
+            className="bg-[#171515] p-4 rounded-2xl border border-white/10 shadow-xs flex flex-col gap-3 text-xs"
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-2">
+              <span className="font-mono font-bold text-lg text-[#C5A880]">{c.code}</span>
+              <button
+                onClick={() => handleToggle(c.id)}
+                className={`px-2.5 py-1 rounded text-[10px] font-bold ${
+                  c.isActive
+                    ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                    : 'bg-red-950 text-red-300 border border-red-800'
+                }`}
+              >
+                {c.isActive ? 'Active' : 'Disabled'}
+              </button>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <div>
+                <span className="font-bold text-white text-sm block">
+                  {c.discountType === 'percentage'
+                    ? `${c.discountValue}% OFF`
+                    : `${formatINR(c.discountValue)} Flat OFF`}
+                </span>
+                <span className="text-[11px] text-[#A8A29E]">Min order: {formatINR(c.minOrderAmount)}</span>
+              </div>
+              <div className="text-right">
+                <span className="text-white font-medium block">{c.usedCount} used</span>
+                <span className="text-[10px] text-[#A8A29E]">{c.endDate}</span>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-white/10 flex justify-end">
+              <button
+                onClick={() => handleDelete(c.id)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2B2625] text-red-400 text-xs font-semibold hover:bg-red-950/40"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Create Modal */}

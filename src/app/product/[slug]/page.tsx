@@ -60,8 +60,16 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
   const isMouseDown = useRef(false);
 
   useEffect(() => {
-    getProductBySlug(slug).then((p) => setProductState(p));
-    getAllProducts().then((list) => setAllProducts(list));
+    const load = () => {
+      getProductBySlug(slug).then((p) => setProductState(p));
+      getAllProducts().then((list) => setAllProducts(list));
+    };
+    load();
+
+    window.addEventListener('vj_products_updated', load);
+    return () => {
+      window.removeEventListener('vj_products_updated', load);
+    };
   }, [slug]);
 
   const product =

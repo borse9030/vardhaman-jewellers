@@ -60,11 +60,19 @@ export default function ProductCatalog({
   );
 
   useEffect(() => {
-    setLoading(true);
-    getAllProducts().then((data) => {
-      setProducts(data);
-      setLoading(false);
-    });
+    const loadProducts = () => {
+      setLoading(true);
+      getAllProducts().then((data) => {
+        setProducts(data);
+        setLoading(false);
+      });
+    };
+    loadProducts();
+
+    window.addEventListener('vj_products_updated', loadProducts);
+    return () => {
+      window.removeEventListener('vj_products_updated', loadProducts);
+    };
   }, []);
 
   // Sync state to URL

@@ -111,8 +111,8 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {/* Orders Table */}
-      <div className="bg-[#171515] rounded-2xl border border-white/10 overflow-hidden shadow-xs">
+      {/* Desktop Orders Table */}
+      <div className="hidden sm:block bg-[#171515] rounded-2xl border border-white/10 overflow-hidden shadow-xs">
         <div className="overflow-x-auto text-xs text-[#E8E2D8]">
           <table className="w-full text-left">
             <thead>
@@ -182,6 +182,62 @@ export default function AdminOrdersPage() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Mobile Orders Cards (sm:hidden) */}
+      <div className="sm:hidden flex flex-col gap-3">
+        {filteredOrders.map((ord) => (
+          <div
+            key={ord.id}
+            className="bg-[#171515] p-4 rounded-2xl border border-white/10 shadow-xs flex flex-col gap-3 text-xs"
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-2">
+              <span className="font-mono font-bold text-[#C5A880]">#{ord.orderNumber}</span>
+              <span className="text-[11px] text-[#A8A29E]">{new Date(ord.createdAt).toLocaleDateString('en-IN')}</span>
+            </div>
+
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="font-semibold text-white block text-sm">{ord.customerName}</span>
+                <span className="text-[11px] text-[#A8A29E]">{ord.customerPhone}</span>
+              </div>
+              <div className="text-right">
+                <span className="font-bold text-white text-base block">{formatINR(ord.totalAmount)}</span>
+                <span className="text-[10px] text-[#A8A29E] uppercase">{ord.paymentMethod}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between bg-[#242121] p-2 rounded-xl">
+              <span className="flex items-center gap-1.5 text-[11px] text-[#E8E2D8]">
+                {ord.deliveryMethod === 'home_delivery' ? (
+                  <Truck className="w-3.5 h-3.5 text-blue-400" />
+                ) : (
+                  <Building className="w-3.5 h-3.5 text-amber-400" />
+                )}
+                <span>{ord.deliveryMethod === 'home_delivery' ? 'Home Delivery' : 'Showroom Pickup'}</span>
+              </span>
+
+              <select
+                value={ord.status}
+                onChange={(e) => handleStatusChange(ord.id, e.target.value as OrderStatus)}
+                className="bg-[#2B2625] text-white text-[11px] px-2 py-1 rounded-lg border border-white/10 font-medium focus:outline-none"
+              >
+                {statuses.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
+            <Link
+              href={`/order-success?orderId=${ord.id}`}
+              target="_blank"
+              className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#2B2625] hover:bg-[#581825] text-white text-xs font-semibold transition-colors"
+            >
+              <Printer className="w-3.5 h-3.5 text-[#C5A880]" />
+              <span>Print GST Tax Invoice</span>
+            </Link>
+          </div>
+        ))}
       </div>
     </div>
   );

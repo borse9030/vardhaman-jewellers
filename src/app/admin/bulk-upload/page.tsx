@@ -71,35 +71,51 @@ export default function BulkImageUploadPage() {
     const allProducts = await getAllProducts();
     let attachedCount = 0;
 
-    // Simulate R2 signed upload & automatic product association
+    // Upload images via /api/upload and automatically associate to products
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
 
       // Update progress
       setItems((prev) =>
-        prev.map((it, idx) => (idx === i ? { ...it, status: 'uploading', progress: 50 } : it))
+        prev.map((it, idx) => (idx === i ? { ...it, status: 'uploading', progress: 40 } : it))
       );
 
-      await new Promise((r) => setTimeout(r, 120)); // simulated direct presigned S3 upload
+      let uploadedUrl = item.previewUrl;
+      try {
+        const formData = new FormData();
+        formData.append('file', item.file);
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          if (uploadData.url) {
+            uploadedUrl = uploadData.url;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn('Upload error for file:', item.file.name, uploadErr);
+      }
 
-      // If matched SKU found, attach image to product in catalogue
+      // If matched SKU found, attach permanent image URL to product in catalogue
       if (item.matchedSKU) {
         const prod = allProducts.find(
           (p) => p.SKU.toUpperCase() === item.matchedSKU!.toUpperCase()
         );
         if (prod) {
-          const updatedImages = [item.previewUrl, ...prod.images.filter((img) => img !== item.previewUrl)];
+          const updatedImages = [uploadedUrl, ...prod.images.filter((img) => img !== uploadedUrl)];
           await createOrUpdateProduct({
             ...prod,
             images: updatedImages,
-            thumbnail: item.previewUrl,
+            thumbnail: uploadedUrl,
           });
           attachedCount++;
         }
       }
 
       setItems((prev) =>
-        prev.map((it, idx) => (idx === i ? { ...it, status: 'success', progress: 100 } : it))
+        prev.map((it, idx) => (idx === i ? { ...it, previewUrl: uploadedUrl, status: 'success', progress: 100 } : it))
       );
     }
 

@@ -5,16 +5,30 @@ import {
   collection,
   getDocs,
   doc,
-  getDoc,
   setDoc,
-  updateDoc,
   deleteDoc,
 } from 'firebase/firestore';
 
-// In-memory / browser cached storage when Firebase credentials are not yet set
+// In-memory / browser cached storage
 let memoryProducts: Product[] = [...INITIAL_PRODUCTS];
 
-// Helper to get products from localStorage in browser if available
+// Helper to broadcast product updates across all open tabs and windows
+function broadcastProductUpdate() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('vj_products_updated'));
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('vj_sync_channel');
+        bc.postMessage({ type: 'PRODUCTS_UPDATED', timestamp: Date.now() });
+        bc.close();
+      }
+    } catch {
+      // Ignore broadcast channel errors in restricted environments
+    }
+  }
+}
+
+// Helper to get products from localStorage in browser
 function getLocalStoredProducts(): Product[] {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem('vj_products_cache');
@@ -37,8 +51,30 @@ function saveLocalProducts(products: Product[]) {
   memoryProducts = products;
   if (typeof window !== 'undefined') {
     localStorage.setItem('vj_products_cache', JSON.stringify(products));
-    window.dispatchEvent(new Event('vj_products_updated'));
+    broadcastProductUpdate();
   }
+}
+
+// Global cross-tab listeners
+if (typeof window !== 'undefined') {
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      const channel = new BroadcastChannel('vj_sync_channel');
+      channel.onmessage = (event) => {
+        if (event.data?.type === 'PRODUCTS_UPDATED') {
+          getLocalStoredProducts();
+          window.dispatchEvent(new Event('vj_products_updated'));
+        }
+      };
+    }
+  } catch {}
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'vj_products_cache') {
+      getLocalStoredProducts();
+      window.dispatchEvent(new Event('vj_products_updated'));
+    }
+  });
 }
 
 export interface ProductFilterParams {
@@ -61,6 +97,24 @@ export interface ProductFilterParams {
 }
 
 export async function getAllProducts(): Promise<Product[]> {
+  // 1. In browser, try server API route first so newly uploaded products sync across all devices
+  if (typeof window !== 'undefined') {
+    try {
+      const res = await fetch('/api/products', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+          memoryProducts = data.products;
+          localStorage.setItem('vj_products_cache', JSON.stringify(data.products));
+          return data.products;
+        }
+      }
+    } catch {
+      // Fall through to Firestore or localStorage on fetch error
+    }
+  }
+
+  // 2. Try Firestore if configured
   if (isFirebaseConfigured && db) {
     try {
       const colRef = collection(db, 'products');
@@ -70,9 +124,8 @@ export async function getAllProducts(): Promise<Product[]> {
         snapshot.forEach((docSnap) => {
           list.push({ id: docSnap.id, ...(docSnap.data() as Omit<Product, 'id'>) });
         });
-        // Merge with any initial products not yet in Firestore
         INITIAL_PRODUCTS.forEach((initP) => {
-          if (!list.some((p) => p.id === initP.id || p.slug === initP.slug)) {
+          if (!list.some((p) => p.id === initP.id || p.slug === initP.slug || p.SKU === initP.SKU)) {
             list.push(initP);
           }
         });
@@ -83,6 +136,7 @@ export async function getAllProducts(): Promise<Product[]> {
       console.warn('Firestore fetch failed, falling back to local memory store:', err);
     }
   }
+
   return getLocalStoredProducts();
 }
 
@@ -223,9 +277,9 @@ export async function getProductById(id: string): Promise<Product | null> {
 
 export async function createOrUpdateProduct(product: Product): Promise<Product> {
   const all = [...(await getAllProducts())];
-  const index = all.findIndex((p) => p.id === product.id);
+  const index = all.findIndex((p) => p.id === product.id || p.SKU === product.SKU);
 
-  const updatedProduct = {
+  const updatedProduct: Product = {
     ...product,
     updatedAt: new Date().toISOString(),
   };
@@ -236,8 +290,23 @@ export async function createOrUpdateProduct(product: Product): Promise<Product> 
     all.unshift(updatedProduct);
   }
 
+  // 1. Immediately save to local cache and broadcast across tabs
   saveLocalProducts(all);
 
+  // 2. Persist to server API route
+  if (typeof window !== 'undefined') {
+    try {
+      await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedProduct),
+      });
+    } catch (e) {
+      console.warn('Server sync warning:', e);
+    }
+  }
+
+  // 3. Persist to Firestore if configured
   if (isFirebaseConfigured && db) {
     try {
       const docRef = doc(db, 'products', product.id);
@@ -255,6 +324,18 @@ export async function deleteProduct(id: string): Promise<boolean> {
   const filtered = all.filter((p) => p.id !== id);
   saveLocalProducts(filtered);
 
+  // 1. Sync to server API route
+  if (typeof window !== 'undefined') {
+    try {
+      await fetch(`/api/products?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      });
+    } catch (e) {
+      console.warn('Server delete warning:', e);
+    }
+  }
+
+  // 2. Sync to Firestore if configured
   if (isFirebaseConfigured && db) {
     try {
       await deleteDoc(doc(db, 'products', id));
@@ -282,9 +363,23 @@ export async function bulkImportProducts(products: Product[]): Promise<{ count: 
 
   saveLocalProducts(all);
 
+  // Sync to server API route for cross-device persistence
+  if (typeof window !== 'undefined') {
+    for (const p of products) {
+      try {
+        await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(p),
+        });
+      } catch (e) {
+        console.warn('Server bulk sync warning for product:', p.SKU, e);
+      }
+    }
+  }
+
   if (isFirebaseConfigured && db) {
     try {
-      // Chunk writes for Firestore 500 ops limit
       for (const p of products) {
         await setDoc(doc(db, 'products', p.id), p);
       }
