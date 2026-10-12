@@ -26,9 +26,9 @@ export async function uploadImageToFirebaseStorage(
   let fileToUpload: File;
   try {
     fileToUpload = await compressImage(file, {
-      maxWidth: 1200,
-      maxHeight: 1200,
-      quality: 0.82,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      quality: 0.90,
       format: 'image/webp',
       ...options,
     });
