@@ -153,7 +153,9 @@ export function subscribeToGoldRates(callback: (rates: GoldRates) => void): () =
           }
         },
         (error) => {
-          console.warn('Firestore onSnapshot subscription error:', error);
+          if ((error as any)?.code !== 'permission-denied') {
+            console.warn('Firestore onSnapshot subscription error:', error);
+          }
         }
       );
     } catch (err) {

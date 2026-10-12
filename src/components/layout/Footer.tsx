@@ -17,9 +17,12 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useGoldRates } from '@/context/GoldRateContext';
+import { formatINR } from '@/services/pricingEngine';
 
 export default function Footer() {
   const { t } = useLanguage();
+  const { rates, setIsLiveModalOpen } = useGoldRates();
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -33,6 +36,45 @@ export default function Footer() {
 
   return (
     <footer className="w-full bg-[#1A1818] text-[#FAF7F2] pt-10 sm:pt-16 pb-28 lg:pb-12 border-t border-[#C5A880]/30 select-none">
+      {/* Docked Live Bullion Rates Banner (Proper Static Placement) */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-8 mb-8 sm:mb-12">
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-[#2B2625]/60 border border-[#C5A880]/30 flex flex-wrap items-center justify-between gap-3 shadow-md">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#DFCDAE]">
+              Live Bullion Rates ({rates.effectiveTime})
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs">
+            <span className="flex items-center gap-1.5">
+              <span className="text-[#A8A29E]">Gold 22K:</span>
+              <strong className="text-white font-bold">{formatINR(rates.rate22K)}/g</strong>
+            </span>
+            <span className="text-white/20 hidden sm:inline">•</span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-[#A8A29E]">Gold 24K:</span>
+              <strong className="text-white font-bold">{formatINR(rates.rate24K)}/g</strong>
+            </span>
+            <span className="text-white/20 hidden sm:inline">•</span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-[#A8A29E]">Silver 999:</span>
+              <strong className="text-white font-bold">{formatINR(rates.rateSilver)}/g</strong>
+            </span>
+          </div>
+
+          <button
+            onClick={() => setIsLiveModalOpen(true)}
+            className="px-3 py-1.5 rounded-lg bg-[#581825] hover:bg-[#782333] text-[#DFCDAE] hover:text-white font-bold text-xs uppercase tracking-wider border border-[#C5A880]/40 transition-colors cursor-pointer"
+          >
+            Calculate & Live Rates ↗
+          </button>
+        </div>
+      </div>
+
       {/* 1. Trust & Assurance Strip */}
       <div className="max-w-7xl mx-auto px-3 sm:px-8 mb-10 sm:mb-16">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-6 pb-8 sm:pb-12 border-b border-[#380B12]/80">

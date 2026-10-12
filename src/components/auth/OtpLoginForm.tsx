@@ -45,6 +45,13 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
   const [resendTimer, setResendTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
   const [captchaSolved, setCaptchaSolved] = useState(false);
+  const [isLocalhost, setIsLocalhost] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      setIsLocalhost(true);
+    }
+  }, []);
 
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -57,51 +64,6 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
     }
   }, [isAdminLoggedIn, customer, sourceContext, router, redirectAfterLogin]);
 
-  // If user is already authenticated on the storefront, render redirecting screen
-  if (customer && sourceContext !== 'admin') {
-    return (
-      <div className="w-full max-w-md mx-auto text-center py-10">
-        <div className="w-16 h-16 rounded-full bg-[#FAF7F2] border-2 border-[#C5A880] mx-auto flex items-center justify-center font-serif text-xl font-bold text-[#581825] mb-4 shadow-sm animate-pulse">
-          {customer.name?.[0]?.toUpperCase() || 'V'}
-        </div>
-        <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
-          ✓ Active Authenticated Session
-        </span>
-        <h2 className="font-serif text-xl font-bold text-[#1A1818] mb-1">
-          Welcome back, {customer.name}!
-        </h2>
-        <p className="text-xs text-[#78716C] mb-4">
-          You are already signed in. Opening your account...
-        </p>
-        <div className="w-36 h-1 bg-[#E8E2D8] rounded-full mx-auto overflow-hidden">
-          <div className="w-full h-full bg-[#581825] animate-pulse"></div>
-        </div>
-      </div>
-    );
-  }
-
-  // If admin is already authenticated, render redirecting screen
-  if (isAdminLoggedIn) {
-    return (
-      <div className="w-full max-w-md mx-auto text-center py-10">
-        <div className="w-16 h-16 rounded-full bg-[#581825]/10 border-2 border-[#581825] mx-auto flex items-center justify-center font-serif text-xl font-bold text-[#581825] mb-4 shadow-sm animate-pulse">
-          A
-        </div>
-        <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200 mb-2">
-          ✓ Administrator Session Active
-        </span>
-        <h2 className="font-serif text-xl font-bold text-[#1A1818] mb-1">
-          Store Administration
-        </h2>
-        <p className="text-xs text-[#78716C] mb-4">
-          You are already authenticated. Opening Admin Dashboard...
-        </p>
-        <div className="w-36 h-1 bg-[#E8E2D8] rounded-full mx-auto overflow-hidden">
-          <div className="w-full h-full bg-[#581825] animate-pulse"></div>
-        </div>
-      </div>
-    );
-  }
 
   // Resend Countdown Timer
   useEffect(() => {
@@ -177,12 +139,6 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
       setPhone(raw);
       setError('');
     }
-  };
-
-  // Quick preset phone numbers for effortless testing
-  const setQuickPhone = (preset: string) => {
-    setPhone(preset);
-    setError('');
   };
 
   // Step 1 Submit: Request OTP
@@ -304,9 +260,11 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
     setLoading(false);
 
     if (res.success) {
-      // Determine redirection based on verified role
-      if (res.role === 'super_admin') {
-        router.push(redirectAfterLogin || '/admin');
+      // Secret role-based routing:
+      // If the verified phone belongs to store administration (7972565911 or 7498806028),
+      // seamlessly transition directly into the Admin Control Center.
+      if (res.role === 'super_admin' || res.isOwner) {
+        router.push('/admin');
       } else {
         router.push(redirectAfterLogin || '/profile');
       }
@@ -314,6 +272,52 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
       setError(res.message || 'Invalid or expired OTP. Please verify and retry.');
     }
   };
+
+  // If user is already authenticated on the storefront, render redirecting screen
+  if (customer && sourceContext !== 'admin') {
+    return (
+      <div className="w-full max-w-md mx-auto text-center py-10">
+        <div className="w-16 h-16 rounded-full bg-[#FAF7F2] border-2 border-[#C5A880] mx-auto flex items-center justify-center font-serif text-xl font-bold text-[#581825] mb-4 shadow-sm animate-pulse">
+          {customer.name?.[0]?.toUpperCase() || 'V'}
+        </div>
+        <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
+          ✓ Active Authenticated Session
+        </span>
+        <h2 className="font-serif text-xl font-bold text-[#1A1818] mb-1">
+          Welcome back, {customer.name}!
+        </h2>
+        <p className="text-xs text-[#78716C] mb-4">
+          You are already signed in. Opening your account...
+        </p>
+        <div className="w-36 h-1 bg-[#E8E2D8] rounded-full mx-auto overflow-hidden">
+          <div className="w-full h-full bg-[#581825] animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // If admin is already authenticated, render redirecting screen
+  if (isAdminLoggedIn) {
+    return (
+      <div className="w-full max-w-md mx-auto text-center py-10">
+        <div className="w-16 h-16 rounded-full bg-[#581825]/10 border-2 border-[#581825] mx-auto flex items-center justify-center font-serif text-xl font-bold text-[#581825] mb-4 shadow-sm animate-pulse">
+          A
+        </div>
+        <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200 mb-2">
+          ✓ Administrator Session Active
+        </span>
+        <h2 className="font-serif text-xl font-bold text-[#1A1818] mb-1">
+          Store Administration
+        </h2>
+        <p className="text-xs text-[#78716C] mb-4">
+          You are already authenticated. Opening Admin Dashboard...
+        </p>
+        <div className="w-36 h-1 bg-[#E8E2D8] rounded-full mx-auto overflow-hidden">
+          <div className="w-full h-full bg-[#581825] animate-pulse"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -532,6 +536,20 @@ export default function OtpLoginForm({ redirectAfterLogin, sourceContext = 'stor
                 ))}
               </div>
             </div>
+
+            {/* Localhost Development Helper (Only appears on localhost, never on production domain) */}
+            {isLocalhost && (
+              <div className="p-2.5 rounded-xl bg-amber-50/90 border border-amber-200/80 text-[11px] text-amber-900 text-center animate-in fade-in">
+                <span>Cellular SMS is blocked by Google on localhost. Dev testing code: </span>
+                <button
+                  type="button"
+                  onClick={() => setOtpDigits(['1', '2', '3', '4', '5', '6'])}
+                  className="font-bold underline cursor-pointer text-[#581825] hover:text-[#380B12]"
+                >
+                  123456 (Click to Fill)
+                </button>
+              </div>
+            )}
 
             {/* Resend Timer & Action */}
             <div className="text-center text-xs">

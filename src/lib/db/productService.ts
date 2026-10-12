@@ -28,6 +28,56 @@ function broadcastProductUpdate() {
   }
 }
 
+// LocalStorage tracking for deleted products so they are never accidentally resurrected
+function getLocalDeletedIds(): string[] {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('vj_deleted_product_ids');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed.map((id) => String(id).toLowerCase().trim());
+      }
+    } catch {}
+  }
+  return [];
+}
+
+function addLocalDeletedId(id: string, sku?: string, slug?: string) {
+  if (typeof window !== 'undefined') {
+    try {
+      const list = getLocalDeletedIds();
+      if (id && !list.includes(id.toLowerCase())) list.push(id.toLowerCase());
+      if (sku && !list.includes(sku.toLowerCase())) list.push(sku.toLowerCase());
+      if (slug && !list.includes(slug.toLowerCase())) list.push(slug.toLowerCase());
+      localStorage.setItem('vj_deleted_product_ids', JSON.stringify(list));
+    } catch {}
+  }
+}
+
+function removeLocalDeletedId(id: string, sku?: string) {
+  if (typeof window !== 'undefined') {
+    try {
+      const list = getLocalDeletedIds();
+      const updated = list.filter(
+        (x) => x !== id.toLowerCase() && (!sku || x !== sku.toLowerCase())
+      );
+      localStorage.setItem('vj_deleted_product_ids', JSON.stringify(updated));
+    } catch {}
+  }
+}
+
+// Helper to filter out deleted products
+function filterOutDeleted(products: Product[]): Product[] {
+  const deleted = getLocalDeletedIds();
+  if (deleted.length === 0) return products;
+  return products.filter(
+    (p) =>
+      !deleted.includes(p.id.toLowerCase()) &&
+      (!p.SKU || !deleted.includes(p.SKU.toLowerCase())) &&
+      (!p.slug || !deleted.includes(p.slug.toLowerCase()))
+  );
+}
+
 // Helper to get products from localStorage in browser
 function getLocalStoredProducts(): Product[] {
   if (typeof window !== 'undefined') {
@@ -36,21 +86,24 @@ function getLocalStoredProducts(): Product[] {
       try {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          memoryProducts = parsed;
-          return parsed;
+          const active = filterOutDeleted(parsed);
+          memoryProducts = active;
+          return active;
         }
       } catch (e) {
         console.error('Failed to parse local stored products:', e);
       }
     }
   }
-  return memoryProducts;
+  const activeMemory = filterOutDeleted(memoryProducts);
+  return activeMemory;
 }
 
 function saveLocalProducts(products: Product[]) {
-  memoryProducts = products;
+  const active = filterOutDeleted(products);
+  memoryProducts = active;
   if (typeof window !== 'undefined') {
-    localStorage.setItem('vj_products_cache', JSON.stringify(products));
+    localStorage.setItem('vj_products_cache', JSON.stringify(active));
     broadcastProductUpdate();
   }
 }
@@ -70,7 +123,7 @@ if (typeof window !== 'undefined') {
   } catch {}
 
   window.addEventListener('storage', (e) => {
-    if (e.key === 'vj_products_cache') {
+    if (e.key === 'vj_products_cache' || e.key === 'vj_deleted_product_ids') {
       getLocalStoredProducts();
       window.dispatchEvent(new Event('vj_products_updated'));
     }
@@ -104,9 +157,10 @@ export async function getAllProducts(): Promise<Product[]> {
       if (res.ok) {
         const data = await res.json();
         if (data.products && Array.isArray(data.products) && data.products.length > 0) {
-          memoryProducts = data.products;
-          localStorage.setItem('vj_products_cache', JSON.stringify(data.products));
-          return data.products;
+          const active = filterOutDeleted(data.products);
+          memoryProducts = active;
+          localStorage.setItem('vj_products_cache', JSON.stringify(active));
+          return active;
         }
       }
     } catch {
@@ -124,16 +178,27 @@ export async function getAllProducts(): Promise<Product[]> {
         snapshot.forEach((docSnap) => {
           list.push({ id: docSnap.id, ...(docSnap.data() as Omit<Product, 'id'>) });
         });
+        const deleted = getLocalDeletedIds();
         INITIAL_PRODUCTS.forEach((initP) => {
+          if (
+            deleted.includes(initP.id.toLowerCase()) ||
+            deleted.includes(initP.SKU.toLowerCase()) ||
+            (initP.slug && deleted.includes(initP.slug.toLowerCase()))
+          ) {
+            return;
+          }
           if (!list.some((p) => p.id === initP.id || p.slug === initP.slug || p.SKU === initP.SKU)) {
             list.push(initP);
           }
         });
-        saveLocalProducts(list);
-        return list;
+        const active = filterOutDeleted(list);
+        saveLocalProducts(active);
+        return active;
       }
-    } catch (err) {
-      console.warn('Firestore fetch failed, falling back to local memory store:', err);
+    } catch (err: any) {
+      if (err?.code !== 'permission-denied') {
+        console.warn('Firestore fetch failed, falling back to local memory store:', err);
+      }
     }
   }
 
@@ -276,11 +341,21 @@ export async function getProductById(id: string): Promise<Product | null> {
 }
 
 export async function createOrUpdateProduct(product: Product): Promise<Product> {
+  // Un-mark from local deleted list
+  removeLocalDeletedId(product.id, product.SKU);
+
   const all = [...(await getAllProducts())];
   const index = all.findIndex((p) => p.id === product.id || p.SKU === product.SKU);
 
+  // Guarantee thumbnail is synchronized with gallery images
+  const finalThumbnail =
+    (product.thumbnail && product.images?.includes(product.thumbnail))
+      ? product.thumbnail
+      : (product.images?.[0] || product.thumbnail || '');
+
   const updatedProduct: Product = {
     ...product,
+    thumbnail: finalThumbnail,
     updatedAt: new Date().toISOString(),
   };
 
@@ -311,8 +386,10 @@ export async function createOrUpdateProduct(product: Product): Promise<Product> 
     try {
       const docRef = doc(db, 'products', product.id);
       await setDoc(docRef, updatedProduct);
-    } catch (err) {
-      console.error('Failed to sync product to Firestore:', err);
+    } catch (err: any) {
+      if (err?.code !== 'permission-denied') {
+        console.error('Failed to sync product to Firestore:', err);
+      }
     }
   }
 
@@ -321,7 +398,14 @@ export async function createOrUpdateProduct(product: Product): Promise<Product> 
 
 export async function deleteProduct(id: string): Promise<boolean> {
   const all = await getAllProducts();
-  const filtered = all.filter((p) => p.id !== id);
+  const target = all.find((p) => p.id === id || p.SKU?.toLowerCase() === id.toLowerCase());
+
+  // Record in local deleted storage immediately
+  addLocalDeletedId(id, target?.SKU, target?.slug);
+
+  const filtered = all.filter(
+    (p) => p.id !== id && p.SKU?.toLowerCase() !== id.toLowerCase()
+  );
   saveLocalProducts(filtered);
 
   // 1. Sync to server API route

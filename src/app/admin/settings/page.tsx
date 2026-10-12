@@ -95,8 +95,8 @@ export default function AdminSettingsPage() {
                 Super Admin
               </span>
             </div>
-            <p className="text-[11px] text-[#A8A29E]">Account: jaynam27@gmail.com</p>
-            <p className="text-[10px] text-[#78716C]">Role: super_admin (RBAC enforced)</p>
+            <p className="text-[11px] text-[#A8A29E]">Owner: +91 79725 65911 (Bhave)</p>
+            <p className="text-[10px] text-[#78716C]">Role: super_admin (Full Operational Control)</p>
           </div>
         </div>
       </div>

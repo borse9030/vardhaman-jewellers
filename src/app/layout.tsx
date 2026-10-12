@@ -9,7 +9,6 @@ import { AuthProvider } from '@/context/AuthContext';
 import CartDrawer from '@/components/cart/CartDrawer';
 import FloatingConcierge from '@/components/chat/FloatingConcierge';
 import LiveRateModal from '@/components/bullion/LiveRateModal';
-import FloatingBullionBar from '@/components/bullion/FloatingBullionBar';
 import ScrollEnhancements from '@/components/layout/ScrollEnhancements';
 
 const serifFont = Cormorant_Garamond({
@@ -130,7 +129,6 @@ export default function RootLayout({
                   {children}
                   <CartDrawer />
                   <FloatingConcierge />
-                  <FloatingBullionBar />
                   <LiveRateModal />
                   <ScrollEnhancements />
                 </AuthProvider>

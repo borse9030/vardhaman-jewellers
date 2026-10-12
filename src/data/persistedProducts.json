@@ -453,8 +453,8 @@
     "id": "vj-dia-001",
     "SKU": "VJ-DIA-001",
     "name": "Ananya Solitaire Halo Diamond Ring (1.05 Ct)",
-    "slug": "ananya-solitaire-halo-diamond-ring",
-    "shortDescription": "IGI Certified 18K white & rose gold diamond ring with a dazzling round brilliant center stone.",
+    "slug": "ananya-solitaire-halo-diamond-ring-1-05-ct",
+    "shortDescription": "Celebrate everlasting love with this masterwork. Featuring a 0.70 ct brilliant round solitaire surrounded by a delicate micro-pave halo of G",
     "description": "Celebrate everlasting love with this masterwork. Featuring a 0.70 ct brilliant round solitaire surrounded by a delicate micro-pave halo of GH/VVS clarity diamonds.",
     "category": "Rings",
     "subcategory": "Solitaire Rings",
@@ -470,13 +470,13 @@
     "stonePrice": 125000,
     "makingChargeType": "fixed",
     "makingCharge": 8500,
-    "wastagePercentage": 0,
+    "wastagePercentage": 2,
     "goldRateReference": "18K",
     "isDynamicPricing": true,
     "basePrice": 0,
     "discount": 5000,
     "GST": 3,
-    "finalPrice": 164500,
+    "finalPrice": 159267,
     "compareAtPrice": 175000,
     "stockStatus": "in_stock",
     "stockQuantity": 4,
@@ -485,25 +485,13 @@
     "newArrival": true,
     "bestSeller": true,
     "tags": [
-      "Diamond",
-      "Solitaire",
+      "Rings",
       "18K",
-      "Engagement",
-      "Ring"
-    ],
-    "occasion": [
+      "Rose Gold",
       "Engagement",
       "Anniversary",
       "Gifting"
     ],
-    "gender": "Women",
-    "hallmarkCertified": true,
-    "images": [
-      "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=1000&q=80"
-    ],
-    "thumbnail": "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=500&q=80",
     "specifications": [
       {
         "key": "Gold Purity",
@@ -526,8 +514,19 @@
         "value": "14 (Free Resizing Available)"
       }
     ],
+    "images": [
+      "/uploads/WhatsApp_Image_2026-10-10_at_2.46.26_PM_1791801467300_2ypay.jpeg"
+    ],
+    "thumbnail": "/uploads/WhatsApp_Image_2026-10-10_at_2.46.26_PM_1791801467300_2ypay.jpeg",
+    "gender": "Women",
+    "occasion": [
+      "Engagement",
+      "Anniversary",
+      "Gifting"
+    ],
+    "hallmarkCertified": true,
     "createdAt": "2026-10-11T08:17:14.963Z",
-    "updatedAt": "2026-10-11T08:17:14.963Z"
+    "updatedAt": "2026-10-12T10:37:52.573Z"
   },
   {
     "id": "vj-dia-002",

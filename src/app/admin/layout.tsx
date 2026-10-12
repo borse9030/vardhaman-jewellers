@@ -26,6 +26,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useGoldRates } from '@/context/GoldRateContext';
 import { formatINR } from '@/services/pricingEngine';
+import { isAuthorizedOwner } from '@/config/ownerAccess';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -34,20 +35,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { rates } = useGoldRates();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Check if active user is an authorized store owner (7972565911, etc.)
+  const isOwner = Boolean(
+    (customer && isAuthorizedOwner(customer.phone)) ||
+    (adminUser && isAuthorizedOwner(adminUser.phone)) ||
+    isAdminLoggedIn
+  );
+
   // Redirect unauthenticated visitors to login (only after session check is ready)
   useEffect(() => {
-    if (authReady && !isAdminLoggedIn && !customer && pathname !== '/admin/login') {
+    if (authReady && !isAdminLoggedIn && !customer && !isOwner && pathname !== '/admin/login') {
       router.push('/admin/login');
     }
-  }, [authReady, isAdminLoggedIn, customer, pathname, router]);
+  }, [authReady, isAdminLoggedIn, customer, isOwner, pathname, router]);
 
   // If on login page, render children directly without admin chrome
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
 
-  // Security barrier: If logged in as regular customer without admin/owner privileges
-  if (authReady && customer && !isAdminLoggedIn) {
+  // Security barrier: Strictly for non-owners. Authorized owners are NEVER blocked!
+  if (authReady && customer && !isAdminLoggedIn && !isOwner) {
     return (
       <div className="min-h-screen bg-[#0F0E0E] flex items-center justify-center p-4 selection:bg-[#581825] selection:text-white">
         <div className="max-w-md w-full bg-[#1A1818] border border-red-500/30 rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative overflow-hidden">
@@ -86,7 +94,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               }}
               className="w-full py-2.5 rounded-xl border border-white/10 hover:border-white/20 text-[#A8A29E] hover:text-white text-xs font-semibold transition-colors cursor-pointer"
             >
-              Sign In with Owner Number
+              Sign In with Administrator Account
             </button>
           </div>
         </div>
@@ -94,7 +102,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  if (!authReady || !isAdminLoggedIn) {
+  if (!authReady || (!isAdminLoggedIn && !isOwner)) {
     return (
       <div className="min-h-screen bg-[#1A1818] flex items-center justify-center p-4 text-white text-xs">
         <div className="flex items-center gap-3">

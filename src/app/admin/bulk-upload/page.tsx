@@ -15,6 +15,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { getAllProducts, createOrUpdateProduct } from '@/lib/db/productService';
+import { uploadImageToFirebaseStorage } from '@/lib/firebase/storage';
 
 interface UploadItem {
   id: string;
@@ -82,18 +83,7 @@ export default function BulkImageUploadPage() {
 
       let uploadedUrl = item.previewUrl;
       try {
-        const formData = new FormData();
-        formData.append('file', item.file);
-        const uploadRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        if (uploadRes.ok) {
-          const uploadData = await uploadRes.json();
-          if (uploadData.url) {
-            uploadedUrl = uploadData.url;
-          }
-        }
+        uploadedUrl = await uploadImageToFirebaseStorage(item.file, 'products');
       } catch (uploadErr) {
         console.warn('Upload error for file:', item.file.name, uploadErr);
       }

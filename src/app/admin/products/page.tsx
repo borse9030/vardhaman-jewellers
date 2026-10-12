@@ -32,6 +32,7 @@ import {
   createOrUpdateProduct,
   deleteProduct,
 } from '@/lib/db/productService';
+import { uploadImageToFirebaseStorage } from '@/lib/firebase/storage';
 import { useGoldRates } from '@/context/GoldRateContext';
 import { calculateProductPrice, formatINR, isSilverProduct } from '@/services/pricingEngine';
 import {
@@ -52,6 +53,21 @@ export default function AdminProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterPurity, setFilterPurity] = useState('all');
+
+  // Deletion Confirmation Modal State
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Helper to reliably retrieve the active product thumbnail
+  const getProductThumbnail = (p: { thumbnail?: string; images?: string[] }) => {
+    if (p.images && p.images.length > 0) {
+      if (p.thumbnail && p.images.includes(p.thumbnail)) {
+        return p.thumbnail;
+      }
+      return p.images[0];
+    }
+    return p.thumbnail || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=200&q=80';
+  };
 
   // Modal State for Create / Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -214,8 +230,12 @@ export default function AdminProductsPage() {
     setFormCompareAtPrice(p.compareAtPrice || 0);
     setFormDiscount(p.discount || 0);
     setFormFixedPrice(p.finalPrice);
-    setFormImages(p.images && p.images.length > 0 ? p.images : [p.thumbnail]);
-    setFormThumbnail(p.thumbnail || (p.images && p.images[0]) || '');
+    const initialImages = p.images && p.images.length > 0 ? p.images : (p.thumbnail ? [p.thumbnail] : []);
+    const initialThumb = (p.thumbnail && initialImages.includes(p.thumbnail))
+      ? p.thumbnail
+      : (initialImages[0] || p.thumbnail || '');
+    setFormImages(initialImages);
+    setFormThumbnail(initialThumb);
     setFormStockStatus(p.stockStatus || 'in_stock');
     setFormStockQuantity(p.stockQuantity ?? 5);
     setFormFeatured(p.featured ?? false);
@@ -238,34 +258,22 @@ export default function AdminProductsPage() {
     setUploadError('');
 
     try {
-      const formData = new FormData();
-      for (let i = 0; i < files.length; i++) {
-        formData.append('files', files[i]);
-      }
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!res.ok) {
-        throw new Error('Upload failed on server');
-      }
-
-      const data = await res.json();
-      const newUrls: string[] = data.urls || (data.url ? [data.url] : []);
+      const uploadPromises = Array.from(files).map((file) =>
+        uploadImageToFirebaseStorage(file, 'products')
+      );
+      const newUrls = await Promise.all(uploadPromises);
 
       if (newUrls.length > 0) {
         setFormImages((prev) => {
           const combined = [...prev, ...newUrls];
-          if (!formThumbnail && combined.length > 0) {
+          if (!formThumbnail || !combined.includes(formThumbnail)) {
             setFormThumbnail(combined[0]);
           }
           return combined;
         });
       }
     } catch (err: any) {
-      console.warn('Server upload error, falling back to base64 reader:', err);
+      console.warn('Firebase Storage upload error, falling back to base64 reader:', err);
       // Fallback: Read files as base64 data URLs so owner can still upload offline!
       for (let i = 0; i < files.length; i++) {
         const reader = new FileReader();
@@ -274,7 +282,9 @@ export default function AdminProductsPage() {
           if (result) {
             setFormImages((prev) => {
               const combined = [...prev, result];
-              if (!formThumbnail) setFormThumbnail(result);
+              if (!formThumbnail || !combined.includes(formThumbnail)) {
+                setFormThumbnail(result);
+              }
               return combined;
             });
           }
@@ -291,7 +301,9 @@ export default function AdminProductsPage() {
     if (!urlInput.trim()) return;
     setFormImages((prev) => {
       const updated = [...prev, urlInput.trim()];
-      if (!formThumbnail) setFormThumbnail(urlInput.trim());
+      if (!formThumbnail || !updated.includes(formThumbnail)) {
+        setFormThumbnail(urlInput.trim());
+      }
       return updated;
     });
     setUrlInput('');
@@ -299,8 +311,9 @@ export default function AdminProductsPage() {
 
   const handleRemoveImage = (indexToRemove: number) => {
     setFormImages((prev) => {
+      const removed = prev[indexToRemove];
       const updated = prev.filter((_, idx) => idx !== indexToRemove);
-      if (formThumbnail === prev[indexToRemove]) {
+      if (formThumbnail === removed || !updated.includes(formThumbnail)) {
         setFormThumbnail(updated[0] || '');
       }
       return updated;
@@ -373,7 +386,10 @@ export default function AdminProductsPage() {
       formImages.length > 0
         ? formImages
         : ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1000&q=80'];
-    const resolvedThumbnail = formThumbnail || resolvedImages[0];
+    const resolvedThumbnail =
+      formThumbnail && resolvedImages.includes(formThumbnail)
+        ? formThumbnail
+        : resolvedImages[0];
 
     const finalCalculated = formIsDynamic ? previewPriceBreakdown.finalPrice : Number(formFixedPrice);
 
@@ -435,10 +451,29 @@ export default function AdminProductsPage() {
     loadData();
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to permanently remove this ornament from the catalogue?')) {
-      await deleteProduct(id);
+  const handleDelete = (id: string) => {
+    const target = products.find((p) => p.id === id);
+    if (target) {
+      setProductToDelete(target);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) return;
+    const targetId = productToDelete.id;
+    setIsDeleting(true);
+    // Optimistic immediate UI removal
+    setProducts((prev) => prev.filter((p) => p.id !== targetId));
+    try {
+      await deleteProduct(targetId);
+      setProductToDelete(null);
       loadData();
+    } catch (err) {
+      console.error('Failed to delete product:', err);
+      alert('Failed to delete ornament. Please try again.');
+      loadData();
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -586,7 +621,7 @@ export default function AdminProductsPage() {
             <tbody className="divide-y divide-white/5">
               {filteredProducts.map((p) => {
                 const breakdown = calculateProductPrice(p, rates);
-                const thumb = p.thumbnail || p.images[0] || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=200&q=80';
+                const thumb = getProductThumbnail(p);
                 return (
                   <tr key={p.id} className="hover:bg-[#2B2625]/40 transition-colors">
                     {/* Ornament Title & Thumbnail */}
@@ -712,7 +747,8 @@ export default function AdminProductsPage() {
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => handleDelete(p.id)}
+                          type="button"
+                          onClick={() => setProductToDelete(p)}
                           className="p-2 rounded-xl bg-[#2B2625] text-[#A8A29E] hover:text-red-400 hover:bg-red-950/40 transition-colors"
                           title="Delete piece"
                         >
@@ -732,7 +768,7 @@ export default function AdminProductsPage() {
       <div className="sm:hidden flex flex-col gap-3">
         {filteredProducts.map((p) => {
           const breakdown = calculateProductPrice(p, rates);
-          const thumb = p.thumbnail || p.images[0] || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=200&q=80';
+          const thumb = getProductThumbnail(p);
           return (
             <div
               key={p.id}
@@ -808,8 +844,9 @@ export default function AdminProductsPage() {
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDelete(p.id)}
-                  className="px-2.5 py-1.5 rounded-lg bg-red-950/40 text-[10px] font-bold text-red-400"
+                  type="button"
+                  onClick={() => setProductToDelete(p)}
+                  className="px-2.5 py-1.5 rounded-lg bg-red-950/40 text-[10px] font-bold text-red-400 hover:bg-red-900/60 transition-colors"
                 >
                   Delete
                 </button>
@@ -1530,6 +1567,79 @@ export default function AdminProductsPage() {
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* LUXURY DELETE CONFIRMATION MODAL */}
+      {productToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => !isDeleting && setProductToDelete(null)}
+          ></div>
+          <div className="relative w-full max-w-md bg-[#1C1919] border border-red-500/30 rounded-3xl p-6 shadow-2xl z-10 space-y-5 text-[#E8E2D8]">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-red-950/60 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-serif font-bold text-white text-base">Permanently Delete Ornament?</h3>
+                <p className="text-[11px] text-[#A8A29E]">This action removes it from the catalogue and live store.</p>
+              </div>
+            </div>
+
+            {/* Ornament Summary Box */}
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-[#242121] border border-white/10">
+              <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-[#2B2625] shrink-0 border border-white/10">
+                <Image
+                  src={getProductThumbnail(productToDelete)}
+                  alt={productToDelete.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="font-bold text-white block text-xs truncate">{productToDelete.name}</span>
+                <span className="font-mono text-[11px] text-[#C5A880] block">{productToDelete.SKU}</span>
+                <span className="text-[10px] text-[#A8A29E]">
+                  {productToDelete.purity} • {productToDelete.category}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#A8A29E] leading-relaxed">
+              Are you sure you want to permanently delete this ornament? Customers will no longer be able to view or order this item.
+            </p>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setProductToDelete(null)}
+                className="flex-1 py-2.5 rounded-xl border border-white/10 text-white font-semibold text-xs hover:bg-[#2B2625] transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 text-white font-bold text-xs shadow-lg shadow-red-900/40 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete Ornament</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 
 export const firebaseConfig = {
@@ -22,12 +23,14 @@ export const isFirebaseConfigured = Boolean(
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let db: Firestore | null = null;
+let storage: FirebaseStorage | null = null;
 let analytics: Analytics | null = null;
 
 try {
   app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
+  storage = getStorage(app);
 
   if (typeof window !== 'undefined' && auth) {
     // Explicitly configure browserLocalPersistence so customer stays logged in permanently
@@ -49,4 +52,4 @@ try {
   console.warn('Firebase initialized in local mock fallback mode:', error);
 }
 
-export { app, auth, db, analytics };
+export { app, auth, db, storage, analytics };

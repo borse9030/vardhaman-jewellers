@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Product images & media: Public read for all store patrons, allow write for product photos
+    match /products/{allPaths=**} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // General media uploads
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}
