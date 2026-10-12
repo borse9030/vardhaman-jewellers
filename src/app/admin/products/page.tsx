@@ -32,7 +32,10 @@ import {
   createOrUpdateProduct,
   deleteProduct,
 } from '@/lib/db/productService';
-import { uploadImageToFirebaseStorage } from '@/lib/firebase/storage';
+import {
+  uploadImageToFirebaseStorage,
+  compressImageToDataUrl,
+} from '@/lib/firebase/storage';
 import { useGoldRates } from '@/context/GoldRateContext';
 import { calculateProductPrice, formatINR, isSilverProduct } from '@/services/pricingEngine';
 import {
@@ -273,23 +276,21 @@ export default function AdminProductsPage() {
         });
       }
     } catch (err: any) {
-      console.warn('Firebase Storage upload error, falling back to base64 reader:', err);
-      // Fallback: Read files as base64 data URLs so owner can still upload offline!
+      console.warn('Firebase Storage upload error, compressing and reading files:', err);
+      // Fallback: Read files as compressed lightweight base64 data URLs (~80KB)
       for (let i = 0; i < files.length; i++) {
-        const reader = new FileReader();
-        reader.onload = (uploadEvent) => {
-          const result = uploadEvent.target?.result as string;
-          if (result) {
-            setFormImages((prev) => {
-              const combined = [...prev, result];
-              if (!formThumbnail || !combined.includes(formThumbnail)) {
-                setFormThumbnail(result);
-              }
-              return combined;
-            });
-          }
-        };
-        reader.readAsDataURL(files[i]);
+        try {
+          const compressedDataUrl = await compressImageToDataUrl(files[i]);
+          setFormImages((prev) => {
+            const combined = [...prev, compressedDataUrl];
+            if (!formThumbnail || !combined.includes(formThumbnail)) {
+              setFormThumbnail(compressedDataUrl);
+            }
+            return combined;
+          });
+        } catch (readErr) {
+          console.warn('Fallback compression failed for file:', files[i].name, readErr);
+        }
       }
     } finally {
       setIsUploading(false);
@@ -1328,7 +1329,7 @@ export default function AdminProductsPage() {
                         {isUploading ? 'Uploading & Processing Images...' : 'Click to Browse Files or Drag & Drop Photos'}
                       </span>
                       <span className="text-[10px] text-[#A8A29E] block mt-0.5">
-                        PNG, JPG, WEBP formats supported. Select multiple files at once.
+                        PNG, JPG, WEBP supported. Auto-compressed to lightweight WebP (&lt;150KB) for fast loading &amp; low storage.
                       </span>
                     </div>
                   </div>
