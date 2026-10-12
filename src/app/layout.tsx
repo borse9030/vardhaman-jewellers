@@ -91,10 +91,10 @@ export default function RootLayout({
     priceRange: '₹₹₹₹',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'MG Road, Near Golani Market',
-      addressLocality: 'Jalgaon',
+      streetAddress: '2557 K Sane Guruji Market, Bazarpeth, Kunte Road',
+      addressLocality: 'Amalner, Jalgaon',
       addressRegion: 'Maharashtra',
-      postalCode: '425001',
+      postalCode: '425401',
       addressCountry: 'IN',
     },
     geo: {

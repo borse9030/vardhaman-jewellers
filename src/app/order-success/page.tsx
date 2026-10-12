@@ -125,7 +125,7 @@ function OrderSuccessContent() {
                 className="h-10 w-auto object-contain"
               />
             </div>
-            <p className="text-[11px] text-[#78716C] mt-0.5">Head Office: MG Road, Golani Market, Jalgaon - 425001</p>
+            <p className="text-[11px] text-[#78716C] mt-0.5">Head Office: 2557 K Sane Guruji Market, Bazarpeth, Kunte Road, Amalner, Jalgaon – 425401, India</p>
             <p className="text-[11px] text-[#78716C]">GSTIN: 27AABCV8421Q1Z8 • BIS Hallmark Reg: HM-MH-916-84210</p>
           </div>
 

@@ -205,7 +205,7 @@ export default function SellGoldPage() {
                     onChange={(e) => setStorePreference(e.target.value)}
                     className="w-full bg-[#FAF7F2] p-2.5 rounded-xl border border-[#E8E2D8] focus:outline-none"
                   >
-                    <option>Jalgaon Flagship Store (MG Road)</option>
+                    <option>Amalner Flagship Showroom (Sane Guruji Market, Bazarpeth)</option>
                     <option>Dhule City Store (Agra Road)</option>
                     <option>Pune Swargate / Laxmi Road</option>
                     <option>Mumbai Dadar (West)</option>

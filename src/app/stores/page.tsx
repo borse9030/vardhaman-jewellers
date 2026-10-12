@@ -38,7 +38,7 @@ export default function StoresPage() {
             Visit Vardhaman Jewellers
           </h1>
           <p className="text-xs sm:text-sm text-[#78716C] mt-2 leading-relaxed">
-            Experience our royal bridal lounges, computerized Karatmeter testing desks, and personalized master craftsman consultation in Jalgaon, Dhule, Pune, and Mumbai.
+            Experience our royal bridal lounges, computerized Karatmeter testing desks, and personalized master craftsman consultation in Amalner, Jalgaon, Dhule, Pune, and Mumbai.
           </p>
         </div>
 

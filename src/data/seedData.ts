@@ -711,17 +711,17 @@ export const INITIAL_PRODUCTS: Product[] = [
 
 export const INITIAL_STORES: StoreLocation[] = [
   {
-    id: 'store-jalgaon',
-    name: 'Vardhaman Jewellers Flagship Store - Jalgaon',
-    slug: 'jalgaon-flagship-store',
-    city: 'Jalgaon',
+    id: 'store-amalner',
+    name: 'Vardhaman Jewellers Flagship Showroom - Amalner',
+    slug: 'amalner-flagship-showroom',
+    city: 'Amalner',
     state: 'Maharashtra',
-    address: 'Near Golani Market, Mahatma Gandhi Road, Jalgaon, Maharashtra 425001',
-    pincode: '425001',
+    address: '2557 K Sane Guruji Market, Bazarpeth, Kunte Road, Amalner, Jalgaon, Maharashtra – 425401, India',
+    pincode: '425401',
     phone: '+91 257 222 4589',
-    email: 'jalgaon@vardhamanjewellers.in',
+    email: 'care@vardhamanjewellers.in',
     workingHours: '10:00 AM - 8:30 PM (Open 7 Days)',
-    googleMapsUrl: 'https://maps.google.com/?q=Jalgaon+Maharashtra',
+    googleMapsUrl: 'https://maps.google.com/?q=Amalner+Maharashtra+425401',
     images: [
       'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80',
     ],

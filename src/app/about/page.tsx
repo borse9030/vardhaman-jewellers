@@ -45,7 +45,7 @@ export default function AboutPage() {
               For over four decades, our master artisans have preserved traditional goldsmithing techniques—from intricate temple Nakshi carvings and Kolhapuri Saaj to royal Maharashtrian Patlya and Pichodi bangles.
             </p>
             <p>
-              Every ornament that leaves our ateliers is crafted with government BIS 916 hallmarked gold, ensuring that our patrons in Jalgaon, Dhule, Pune, and Mumbai receive nothing less than certified purity.
+              Every ornament that leaves our ateliers is crafted with government BIS 916 hallmarked gold, ensuring that our patrons in Amalner, Jalgaon, Dhule, Pune, and Mumbai receive nothing less than certified purity.
             </p>
             <p>
               We believe jewellery is never merely an ornament; it is a sacred trust passed down across mothers and daughters, celebrating sacred vows and life’s golden moments.

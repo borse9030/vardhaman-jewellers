@@ -31,7 +31,7 @@ export default function CheckoutPage() {
 
   // Delivery options
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('home_delivery');
-  const [pickupStoreId, setPickupStoreId] = useState('store-jalgaon');
+  const [pickupStoreId, setPickupStoreId] = useState('store-amalner');
 
   // Customer Contact & Shipping
   const [fullName, setFullName] = useState('');
@@ -254,7 +254,7 @@ export default function CheckoutPage() {
                     onChange={(e) => setPickupStoreId(e.target.value)}
                     className="w-full bg-[#FAF7F2] p-2.5 rounded-xl border border-[#E8E2D8]"
                   >
-                    <option value="store-jalgaon">Jalgaon Flagship Store (MG Road)</option>
+                    <option value="store-amalner">Amalner Flagship Showroom (Sane Guruji Market, Bazarpeth)</option>
                     <option value="store-dhule">Dhule City Store (Agra Road)</option>
                     <option value="store-pune">Pune Swargate / Laxmi Road</option>
                     <option value="store-mumbai">Mumbai Dadar (Ranade Road West)</option>

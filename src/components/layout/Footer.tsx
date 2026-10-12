@@ -133,6 +133,10 @@ export default function Footer() {
             </p>
 
             <div className="pt-2 space-y-2 text-xs text-[#D6D3D1]">
+              <div className="flex items-start gap-2.5">
+                <MapPin className="w-3.5 h-3.5 text-[#C5A880] shrink-0 mt-0.5" />
+                <span>2557 K Sane Guruji Market, Bazarpeth, Kunte Road, Amalner, Jalgaon, Maharashtra – 425401, India</span>
+              </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="w-3.5 h-3.5 text-[#C5A880]" />
                 <span>Customer Concierge: +91 257 222 4589 / +91 98221 23456</span>
@@ -226,8 +230,10 @@ export default function Footer() {
         {/* 3. Physical Stores Footnote */}
         <div className="py-6 border-b border-[#2B2625] text-xs text-[#78716C] flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-4">
-            <span className="font-semibold text-[#D6D3D1]">Our Flagship Outlets:</span>
-            <span>Jalgaon (MG Road)</span>
+            <span className="font-semibold text-[#D6D3D1]">Our Showrooms:</span>
+            <span>Amalner (2557 K Sane Guruji Market)</span>
+            <span>•</span>
+            <span>Jalgaon (Khandesh)</span>
             <span>•</span>
             <span>Dhule (Agra Road)</span>
             <span>•</span>

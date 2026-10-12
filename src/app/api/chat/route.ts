@@ -52,10 +52,10 @@ All gold jewellery at Vardhaman Jewellers carries Government BIS 916 hallmarking
       ];
     }
     // 2. Stores & Locations
-    else if (q.includes('store') || q.includes('location') || q.includes('address') || q.includes('jalgaon') || q.includes('dhule') || q.includes('pune') || q.includes('mumbai') || q.includes('दुकान') || q.includes('पत्ता')) {
+    else if (q.includes('store') || q.includes('location') || q.includes('address') || q.includes('amalner') || q.includes('jalgaon') || q.includes('dhule') || q.includes('pune') || q.includes('mumbai') || q.includes('दुकान') || q.includes('पत्ता')) {
       if (isMarathi) {
         reply = `वर्धमान ज्वेलर्सची प्रमुख दालने:
-१. जळगाव मुख्य दालन: एमजी रोड, गोलानी मार्केट जवळ, जळगाव (फोन: ०२५७-२२२४५८९)
+१. अमळनेर मुख्य दालन: २५५७ के साने गुरुजी मार्केट, बाजारपेठ, कुंटे रोड, अमळनेर, जळगाव – ४२५४०१ (फोन: ०२५७-२२२४५८९)
 २. धुळे दालन: आग्रा रोड, महानगरपालिकेसमोर, धुळे (फोन: ०२५६२-२३४११२)
 ३. पुणे दालन: स्वारगेट / लक्ष्मी रोड कॉर्नर, पुणे
 ४. मुंबई दालन: रानडे रोड, दादर (पश्चिम), मुंबई
@@ -63,15 +63,15 @@ All gold jewellery at Vardhaman Jewellers carries Government BIS 916 hallmarking
 सर्व दालनांमध्ये कॅरटमीटरने मोफत सोन्याची शुद्धता तपासणी व ब्रायडल लाउंज उपलब्ध आहे.`;
       } else if (isHindi) {
         reply = `वर्धमान ज्वेलर्स के प्रमुख स्टोर्स:
-१. जलगांव मुख्य स्टोर: एमजी रोड, गोलानी मार्केट के पास, जलगांव
+१. अमलनेर मुख्य स्टोर: २५५७ के साने गुरुजी मार्केट, बाजारपेठ, कुंटे रोड, अमलनेर, जलगांव – ४२५४०१
 २. धुले स्टोर: आगरा रोड, नगर निगम के सामने, धुले
 ३. पुणे स्टोर: स्वारगेट / लक्ष्मी रोड, पुणे
 ४. मुंबई स्टोर: रानडे रोड, दादर पश्चिम, मुंबई
 
 दुकान समय: सुबह १०:०० बजे से रात ८:३० बजे तक।`;
       } else {
-        reply = `Vardhaman Jewellers Flagship Stores:
-1. Jalgaon (Flagship): MG Road, near Golani Market (Ph: +91 257 222 4589)
+        reply = `Vardhaman Jewellers Flagship Showroom & Outlets:
+1. Amalner (Flagship Showroom): 2557 K Sane Guruji Market, Bazarpeth, Kunte Road, Amalner, Jalgaon – 425401, India (Ph: +91 257 222 4589)
 2. Dhule: Agra Road, opp. Municipal Corporation (Ph: +91 2562 234 112)
 3. Pune: Laxmi Road / Swargate Corner (Ph: +91 20 2445 8899)
 4. Mumbai: Ranade Road, Dadar West (Ph: +91 22 2430 7744)

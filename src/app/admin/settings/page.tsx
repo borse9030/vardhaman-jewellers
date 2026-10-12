@@ -19,7 +19,7 @@ export default function AdminSettingsPage() {
   const [phone, setPhone] = useState('+91 257 222 4589');
   const [whatsapp, setWhatsapp] = useState('919822123456');
   const [email, setEmail] = useState('care@vardhamanjewellers.in');
-  const [address, setAddress] = useState('MG Road, Near Golani Market, Jalgaon, Maharashtra 425001');
+  const [address, setAddress] = useState('2557 K Sane Guruji Market, Bazarpeth, Kunte Road, Amalner, Jalgaon, Maharashtra – 425401, India');
   const [gstRate, setGstRate] = useState(3);
   const [saved, setSaved] = useState(false);
 

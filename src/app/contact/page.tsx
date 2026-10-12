@@ -50,10 +50,18 @@ export default function ContactPage() {
 
             <div className="space-y-4 text-xs text-[#57534E]">
               <div className="flex items-start gap-3">
+                <MapPin className="w-4 h-4 text-[#C5A880] mt-0.5 shrink-0" />
+                <div>
+                  <strong className="block text-[#1A1818]">Flagship Showroom</strong>
+                  <span>2557 K Sane Guruji Market, Bazarpeth, Kunte Road, Amalner, Jalgaon, Maharashtra – 425401, India</span>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
                 <Phone className="w-4 h-4 text-[#C5A880] mt-0.5" />
                 <div>
                   <strong className="block text-[#1A1818]">Telephone Support</strong>
-                  <span>+91 257 222 4589 (Jalgaon)</span>
+                  <span>+91 257 222 4589 (Amalner &amp; Jalgaon)</span>
                   <br />
                   <span>+91 20 2445 8899 (Pune)</span>
                 </div>
